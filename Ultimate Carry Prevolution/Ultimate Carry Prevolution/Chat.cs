@@ -10,9 +10,7 @@ namespace Ultimate_Carry_Prevolution
 			Game.PrintChat(
 				"<font color ='{0}'>Ultimate</font> <font color ='{1}'>Carry</font> <font color ='{1}'>Prevolution</font>",
 				HtmlColor.Cyan, HtmlColor.Cyan);
-			Game.PrintChat(
-				"<font color ='{2}'>By xSalice & Lexxes</font> , <font color ='{3}'>Made in</font> <font color ='{4}'>U</font><font color ='{5}'>S</font> & <font color ='{0}'>Au</font><font color ='{1}'>str</font><font color ='{0}'>ia</font>",
-				HtmlColor.Red, HtmlColor.White, HtmlColor.Gold, HtmlColor.Cyan, HtmlColor.DarkBlue, HtmlColor.Gold);
+			Game.PrintChat("<font color ='{0}'>By xSalice & Lexxes</font>", HtmlColor.Gold);
 			Game.PrintChat(
 				"<font color ='{0}'>Version </font> <font color ='{1}'>" + Loader.VersionNumber +
 				"</font> <font color ='{0}'>Loading</font>",
