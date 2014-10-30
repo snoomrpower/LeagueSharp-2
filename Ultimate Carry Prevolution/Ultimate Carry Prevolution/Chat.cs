@@ -17,7 +17,7 @@ namespace Ultimate_Carry_Prevolution
 				HtmlColor.Cyan, HtmlColor.Gold);
 			if (IsChampionSupported())
 				Game.PrintChat(
-					"<font color ='{0}'>Load Plugin for </font> <font color ='{1}'>" + ObjectManager.Player.ChampionName + "</font>",
+					"<font color ='{0}'>Loaded Plugin for </font> <font color ='{1}'>" + ObjectManager.Player.ChampionName + "</font>",
 					HtmlColor.Cyan, HtmlColor.Gold);
 			else
 				Game.PrintChat(
