@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using LeagueSharp;
 using LeagueSharp.Common;
-using SharpDX;
 using xSLx_Orbwalker;
 using Color = System.Drawing.Color;
 
@@ -67,13 +63,6 @@ namespace Ultimate_Carry_Prevolution.Plugin
 					AddSpelltoMenu(fleeMenu, "E", true, "Use E to charm Enemy");
 					champMenu.AddSubMenu(fleeMenu);
 				}
-				var miscMenu = new Menu("Misc", "Misc");
-				{
-					miscMenu.AddItem(new MenuItem("Misc_useW_Autoswitch", "Switch W Automatic").SetValue(true));
-					miscMenu.AddItem(new MenuItem("Misc_useW_Autoswitch_health", "Use E to slow Enemy").SetValue(new Slider(60, 100, 0)));
-					miscMenu.AddItem(new MenuItem("Misc_useW_Autoswitch_priorityhealth", "Heal Priority farming").SetValue(true));
-					champMenu.AddSubMenu(miscMenu);
-				}
 				var drawMenu = new Menu("Drawing", "Drawing");
 				{
 					drawMenu.AddItem(new MenuItem("Draw_Disabled", "Disable All").SetValue(false));
@@ -114,7 +103,7 @@ namespace Ultimate_Carry_Prevolution.Plugin
 			return spellCombo;
 		}
 
-		float GetComboDamage(Obj_AI_Base target)
+		private float GetComboDamage(Obj_AI_Base target)
 		{
 			double comboDamage = (float)ObjectManager.Player.GetComboDamage(target, GetSpellCombo());
 			return (float)(comboDamage + ObjectManager.Player.GetAutoAttackDamage(target));
@@ -240,7 +229,7 @@ namespace Ultimate_Carry_Prevolution.Plugin
 			return friendsNearMouse.Count() - (objAiHeroes.Count() - lowHealthEnemies) >= -1 || MyHero.Health / totalEnemyHealth >= 0.8;
 		}
 
-		 bool IsRActive()
+		private bool IsRActive()
 		{
 			return ObjectManager.Player.HasBuff("AhriTumble", true);
 		}

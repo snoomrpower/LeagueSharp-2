@@ -80,6 +80,7 @@
     <Compile Include="Loader.cs" />
     <Compile Include="Plugin\Aatrox.cs" />
     <Compile Include="Plugin\Ahri.cs" />
+    <Compile Include="Plugin\Akali.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

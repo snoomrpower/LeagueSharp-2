@@ -194,7 +194,30 @@ namespace Ultimate_Carry_Prevolution
 		{
 			return min <= AllHerosEnemy.Count(hero => hero.Position.Distance(pos) < range && hero.IsValidTarget() && !hero.IsDead);
 		}
-
+		public Vector2 V2E(Vector3 from, Vector3 direction, float distance)
+		{
+			return from.To2D() + distance * Vector3.Normalize(direction - from).To2D();
+		}
+		public bool HasBuff(Obj_AI_Base target, string buffName)
+		{
+			return target.Buffs.Any(buff => buff.Name == buffName);
+		}
+		public bool IsWall(Vector2 pos)
+		{
+			return (NavMesh.GetCollisionFlags(pos.X, pos.Y) == CollisionFlags.Wall ||
+					NavMesh.GetCollisionFlags(pos.X, pos.Y) == CollisionFlags.Building);
+		}
+		public bool IsPassWall(Vector3 start, Vector3 end)
+		{
+			double count = Vector3.Distance(start, end);
+			for(uint i = 0; i <= count; i += 10)
+			{
+				Vector2 pos = V2E(start, end, i);
+				if(IsWall(pos))
+					return true;
+			}
+			return false;
+		}
 		public virtual void OnDraw(EventArgs args)
 		{
 			OnDraw();
