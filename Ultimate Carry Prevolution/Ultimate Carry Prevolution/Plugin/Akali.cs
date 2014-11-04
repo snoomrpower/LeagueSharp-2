@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using LeagueSharp;
 using LeagueSharp.Common;
-using SharpDX;
 using xSLx_Orbwalker;
 using Color = System.Drawing.Color;
 
@@ -10,8 +8,6 @@ namespace Ultimate_Carry_Prevolution.Plugin
 {
 	class Akali : Champion
 	{
-		private Obj_AI_Hero _killableTarget;
-		private float _assignTime;
 
 		public Akali()
 		{
@@ -137,46 +133,19 @@ namespace Ultimate_Carry_Prevolution.Plugin
 
 		}
 
-		//public override void OnPassive()
-		//{
-		//	var possibleTarget = SimpleTs.GetTarget(R.Range * 2 + xSLxOrbwalker.GetAutoAttackRange(), SimpleTs.DamageType.Magical);
-
-		//	if(_killableTarget.IsDead || Game.Time - _assignTime > 1.5)
-		//		_killableTarget = null;
-
-		//	if(_killableTarget == default(Obj_AI_Hero) && GetComboDamage(possibleTarget) > possibleTarget.Health)
-		//	{
-		//		_killableTarget = possibleTarget;
-		//		_assignTime = Game.Time;
-		//	}
-
-		//	if(_killableTarget != null)
-		//	{
-		//		if(MyHero.Distance(_killableTarget) < R.Range * 2 + xSLxOrbwalker.GetAutoAttackRange() && MyHero.Distance(_killableTarget) > Q.Range)
-		//			Cast_R(_killableTarget.Position);
-		//		else if(MyHero.Distance(_killableTarget) < Q.Range)
-		//			KillCombo(_killableTarget);
-		//		else
-		//			_killableTarget = null;
-		//	}
-		//}
 		public override void OnCombo()
 		{
-			if (_killableTarget == null)
-			{
-			
-				if(IsSpellActive("Q"))
-					Cast_Q(true);
-				if(IsSpellActive("E"))
-					Cast_E(true);
-				if(IsSpellActive("W"))
-					Cast_W();
-				if(!IsSpellActive("R"))
-					return;
-				var target = SimpleTs.GetTarget(R.Range, SimpleTs.DamageType.Magical);
-				if((target.IsValidTarget(R.Range) && !xSLxOrbwalker.InAutoAttackRange(target)) || R.IsKillable(target))
-					R.Cast(target, UsePackets());
-			}
+			if(IsSpellActive("Q"))
+				Cast_Q(true);
+			if(IsSpellActive("E"))
+				Cast_E(true);
+			if(IsSpellActive("W"))
+				Cast_W();
+			if(!IsSpellActive("R"))
+				return;
+			var target = SimpleTs.GetTarget(R.Range, SimpleTs.DamageType.Magical);
+			if((target.IsValidTarget(R.Range) && !xSLxOrbwalker.InAutoAttackRange(target)) || R.IsKillable(target))
+				R.Cast(target, UsePackets());
 		}
 
 		public override void OnHarass()
@@ -193,21 +162,6 @@ namespace Ultimate_Carry_Prevolution.Plugin
 				Cast_Q(false);
 			if(IsSpellActive("E"))
 				Cast_E(false);
-		}
-
-		private void KillCombo(Obj_AI_Base target)
-		{
-			xSLxOrbwalker.SetAttack(!Q.IsReady() && !E.IsReady() && MyHero.Distance(target) < 800f);
-			xSLxOrbwalker.ForcedTarget = target;
-
-			if(Q.IsReady() && Q.InRange(target.Position) && !HasBuff(target, "AkaliMota"))
-				Q.Cast(target, UsePackets());
-			if(E.IsReady() && E.InRange(target.Position))
-				E.Cast();
-			if(W.IsReady() && W.InRange(target.Position) && !(HasBuff(target, "AkaliMota") && MyHero.Distance(target) > Orbwalking.GetRealAutoAttackRange(MyHero)))
-				W.Cast(V2E(MyHero.Position, target.Position, MyHero.Distance(target) + W.Width * 2 - 20), UsePackets());
-			if(R.IsReady() && R.InRange(target.Position))
-				R.Cast(target, UsePackets());
 		}
 
 		private void Cast_Q(bool mode)
@@ -269,25 +223,6 @@ namespace Ultimate_Carry_Prevolution.Plugin
 					MinionTeam.Neutral, MinionOrderTypes.MaxHealth).Where(minion => MyHero.Distance(minion) <= E.Range))
 					E.Cast();
 			}
-		}
-
-		private void Cast_R(Vector3 position, bool mouseJump = false)
-		{
-			Obj_AI_Base[] target = { null };
-			foreach(var minion in ObjectManager.Get<Obj_AI_Base>().Where(minion => minion.IsValidTarget(R.Range) && MyHero.Distance(position, true) > minion.Distance(position, true) && minion.Distance(position, true) < target[0].Distance(position, true)))
-				if(mouseJump)
-				{
-					if(minion.Distance(position) < 200)
-						target[0] = minion;
-				}
-				else
-					target[0] = minion;
-			if(target[0] == null || (!R.IsReady() || !R.InRange(target[0].Position) || target[0].IsMe))
-				return;
-			if(mouseJump && target[0].Distance(position) < 200)
-				R.CastOnUnit(target[0], UsePackets());
-			else if(MyHero.Distance(position, true) > target[0].Distance(position, true))
-				R.CastOnUnit(target[0], UsePackets());
 		}
 
 		private double CalcPassiveDmg()
