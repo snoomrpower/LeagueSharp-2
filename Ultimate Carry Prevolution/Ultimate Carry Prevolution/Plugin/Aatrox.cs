@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using LeagueSharp;
 using LeagueSharp.Common;
 using xSLx_Orbwalker;
@@ -71,6 +72,16 @@ namespace Ultimate_Carry_Prevolution.Plugin
 					drawMenu.AddItem(new MenuItem("Draw_Q", "Draw Q").SetValue(true));
 					drawMenu.AddItem(new MenuItem("Draw_E", "Draw E").SetValue(true));
 					drawMenu.AddItem(new MenuItem("Draw_R", "Draw R").SetValue(true));
+					
+					var drawComboDamageMenu = new MenuItem("Draw_ComboDamage", "Draw Combo Damage").SetValue(true);			
+					drawMenu.AddItem(drawComboDamageMenu);
+						Utility.HpBarDamageIndicator.DamageToUnit = GetComboDamage;
+					Utility.HpBarDamageIndicator.Enabled = drawComboDamageMenu.GetValue<bool>();
+					drawComboDamageMenu.ValueChanged += delegate(object sender, OnValueChangeEventArgs eventArgs)
+					{
+						Utility.HpBarDamageIndicator.Enabled = eventArgs.GetNewValue<bool>();
+					};
+					
 					champMenu.AddSubMenu(drawMenu);
 				}
 			}
@@ -78,6 +89,25 @@ namespace Ultimate_Carry_Prevolution.Plugin
 			Menu.AddSubMenu(champMenu);
 			Menu.AddToMainMenu();
 
+		}
+
+		IEnumerable<SpellSlot> GetSpellCombo()
+		{
+			var spellCombo = new List<SpellSlot>();
+
+			if(Q.IsReady())
+				spellCombo.Add(SpellSlot.Q);
+			if(E.IsReady())
+				spellCombo.Add(SpellSlot.E);
+			if(R.IsReady())
+				spellCombo.Add(SpellSlot.R);
+			return spellCombo;
+		}
+
+		float GetComboDamage(Obj_AI_Base target)
+		{
+			double comboDamage = (float)ObjectManager.Player.GetComboDamage(target, GetSpellCombo());
+			return (float)(comboDamage + (MyHero.GetAutoAttackDamage(target) * (Q.IsReady() ? 2 : 1)));
 		}
 
 		public override void OnDraw()
