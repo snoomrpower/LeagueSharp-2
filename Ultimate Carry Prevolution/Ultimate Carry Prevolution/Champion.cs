@@ -14,10 +14,10 @@ namespace Ultimate_Carry_Prevolution
 	class Champion
 	{
 		public Obj_AI_Hero MyHero = ObjectManager.Player;
-		public  IEnumerable<Obj_AI_Hero> AllHeros = ObjectManager.Get<Obj_AI_Hero>();
-		public  IEnumerable<Obj_AI_Hero> AllHerosFriend = ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsAlly);
-		public  IEnumerable<Obj_AI_Hero> AllHerosEnemy = ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsEnemy);
-	
+		public IEnumerable<Obj_AI_Hero> AllHeros = ObjectManager.Get<Obj_AI_Hero>();
+		public IEnumerable<Obj_AI_Hero> AllHerosFriend = ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsAlly);
+		public IEnumerable<Obj_AI_Hero> AllHerosEnemy = ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsEnemy);
+
 		public Spell Q;
 		public Spell W;
 		public Spell E;
@@ -28,7 +28,7 @@ namespace Ultimate_Carry_Prevolution
 		private List<DrawObject> _drawObjectlist = new List<DrawObject>();
 		public Champion()
 		{
-			
+
 			LoadBasics();
 
 			Game.OnGameUpdate += OnGameUpdate;
@@ -40,24 +40,24 @@ namespace Ultimate_Carry_Prevolution
 		{
 			OnPassive();
 
-			switch (xSLxOrbwalker.CurrentMode)
+			switch(xSLxOrbwalker.CurrentMode)
 			{
 				case xSLxOrbwalker.Mode.Combo:
 					OnCombo();
 					break;
-				case xSLxOrbwalker.Mode.Harass :
+				case xSLxOrbwalker.Mode.Harass:
 					OnHarass();
 					break;
-				case xSLxOrbwalker.Mode.LaneClear :
+				case xSLxOrbwalker.Mode.LaneClear:
 					OnLaneClear();
 					break;
-				case xSLxOrbwalker.Mode.LaneFreeze :
+				case xSLxOrbwalker.Mode.LaneFreeze:
 					OnLaneFreeze();
 					break;
-				case xSLxOrbwalker.Mode.Lasthit :
+				case xSLxOrbwalker.Mode.Lasthit:
 					OnLasthit();
 					break;
-				case xSLxOrbwalker.Mode.Flee :
+				case xSLxOrbwalker.Mode.Flee:
 					OnFlee();
 					break;
 				case xSLxOrbwalker.Mode.None:
@@ -69,16 +69,16 @@ namespace Ultimate_Carry_Prevolution
 		private void LoadBasics()
 		{
 			Menu = new Menu("UC-Prevolution", MyHero.ChampionName + "_UCP", true);
-			
+
 			//the Team
 			Menu.AddSubMenu(new Menu("UC-Team", "Credits"));
 			Menu.SubMenu("Credits").AddItem(new MenuItem("Lexxes", "Lexxes (Austria)"));
 			Menu.SubMenu("Credits").AddItem(new MenuItem("xSalice", "xSalice (US)"));
-			
+
 			//PacketMenu
 			Menu.AddSubMenu(new Menu("Packet Setting", "Packets"));
 			Menu.SubMenu("Packets").AddItem(new MenuItem("usePackets", "Use Packets").SetValue(false));
-			
+
 			//Orbwalker get changed to xSLxOrbwalker Soon
 			var orbwalkerMenu = new Menu("LX Orbwalker", "LX_Orbwalker");
 			xSLxOrbwalker.AddToMenu(orbwalkerMenu);
@@ -103,7 +103,7 @@ namespace Ultimate_Carry_Prevolution
 			spell.Cast(target, UsePackets());
 			return target;
 		}
-	
+
 		public void Cast_BasicSkillshot_AOE_Farm(Spell spell, int extrawidth = 0)
 		{
 			if(!spell.IsReady())
@@ -113,7 +113,7 @@ namespace Ultimate_Carry_Prevolution
 				return;
 			MinionManager.FarmLocation castPostion;
 
-			switch (spell.Type)
+			switch(spell.Type)
 			{
 				case SkillshotType.SkillshotCircle:
 					castPostion = MinionManager.GetBestCircularFarmLocation(minions.Select(minion => minion.ServerPosition.To2D()).ToList(), spell.Width + extrawidth, spell.Range);
@@ -126,7 +126,8 @@ namespace Ultimate_Carry_Prevolution
 					return;
 			}
 			spell.UpdateSourcePosition();
-			spell.Cast(castPostion.Position, UsePackets());
+			if(castPostion.MinionsHit >= 2 || minions.Any(x => x.Team == GameObjectTeam.Neutral))
+				spell.Cast(castPostion.Position, UsePackets());
 		}
 
 		public static bool IsInsideEnemyTower(Vector3 position)
@@ -135,10 +136,10 @@ namespace Ultimate_Carry_Prevolution
 									.Any(tower => tower.IsEnemy && tower.Health > 0 && tower.Position.Distance(position) < 775);
 		}
 
-		public void AddSpelltoMenu(Menu menu, string name, bool state,string alternativename = "")
+		public void AddSpelltoMenu(Menu menu, string name, bool state, string alternativename = "")
 		{
-			if (alternativename == "")
-				alternativename = "Use " + menu;
+			if(alternativename == "")
+				alternativename = "Use " + name;
 			menu.AddItem(new MenuItem(menu.Name + "_" + name.Replace(" ", "_"), alternativename).SetValue(state));
 		}
 
@@ -152,6 +153,30 @@ namespace Ultimate_Carry_Prevolution
 			{
 				return false;
 			}
+		}
+
+		public void AddManaManagertoMenu(Menu menu, int standard)
+		{
+			menu.AddItem(new MenuItem(menu.Name + "_Manamanager", "Mana-Manager").SetValue(new Slider(standard)));
+		}
+
+		public bool ManaManagerAllowCast()
+		{
+			try
+			{
+				if(GetManaPercent() < Menu.Item(xSLxOrbwalker.CurrentMode + "_Manamanager").GetValue<Slider>().Value)
+					return false;
+			}
+			catch
+			{
+				return true;
+			}
+			return true;
+		}
+
+		public float GetManaPercent()
+		{
+			return (MyHero.Mana / MyHero.MaxMana) * 100f;
 		}
 
 		public string GetSpellName(SpellSlot slot, Obj_AI_Hero unit = null)

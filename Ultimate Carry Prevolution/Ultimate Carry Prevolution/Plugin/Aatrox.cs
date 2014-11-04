@@ -94,7 +94,6 @@ namespace Ultimate_Carry_Prevolution.Plugin
 		IEnumerable<SpellSlot> GetSpellCombo()
 		{
 			var spellCombo = new List<SpellSlot>();
-
 			if(Q.IsReady())
 				spellCombo.Add(SpellSlot.Q);
 			if(E.IsReady())
