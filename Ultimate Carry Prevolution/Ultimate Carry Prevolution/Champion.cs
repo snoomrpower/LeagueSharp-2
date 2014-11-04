@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.Odbc;
 using System.Linq;
+using System.Security.AccessControl;
 using System.Text;
 using LeagueSharp;
 using LeagueSharp.Common;
@@ -27,6 +28,7 @@ namespace Ultimate_Carry_Prevolution
 		private List<DrawObject> _drawObjectlist = new List<DrawObject>();
 		public Champion()
 		{
+			
 			LoadBasics();
 
 			Game.OnGameUpdate += OnGameUpdate;
@@ -36,6 +38,7 @@ namespace Ultimate_Carry_Prevolution
 
 		private void OnGameUpdateModes(EventArgs args)
 		{
+			OnPassive();
 
 			switch (xSLxOrbwalker.CurrentMode)
 			{
@@ -61,7 +64,6 @@ namespace Ultimate_Carry_Prevolution
 					OnStandby();
 					break;
 			}
-			OnPassive();
 		}
 
 		private void LoadBasics()

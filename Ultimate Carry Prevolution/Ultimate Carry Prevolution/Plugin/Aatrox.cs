@@ -149,12 +149,12 @@ namespace Ultimate_Carry_Prevolution.Plugin
 		{
 			if(!W.IsReady())
 				return;
-			if(!Menu.Item("useW_autoswitch").GetValue<bool>())
+			if(!Menu.Item("Misc_useW_Autoswitch").GetValue<bool>())
 				return;
 			if(xSLxOrbwalker.CurrentMode == xSLxOrbwalker.Mode.Combo)
 			{
 				if(MyHero.Health / MyHero.MaxHealth * 100 <
-					Menu.Item("useW_autoswitch_health").GetValue<Slider>().Value)
+					Menu.Item("Misc_useW_Autoswitch_health").GetValue<Slider>().Value)
 				{
 					WtoHeal();
 					return;
@@ -162,7 +162,7 @@ namespace Ultimate_Carry_Prevolution.Plugin
 				WtoDamage();
 				return;
 			}
-			if(Menu.Item("useW_autoswitch").GetValue<bool>())
+			if(Menu.Item("Misc_useW_Autoswitch_priorityhealth").GetValue<bool>())
 			{
 				if(MyHero.Health / MyHero.MaxHealth * 100 < 95)
 					WtoHeal();
@@ -172,7 +172,7 @@ namespace Ultimate_Carry_Prevolution.Plugin
 			else
 			{
 				if(MyHero.Health / MyHero.MaxHealth * 100 <
-					Menu.Item("useW_autoswitch_health").GetValue<Slider>().Value)
+					Menu.Item("Misc_useW_Autoswitch_health").GetValue<Slider>().Value)
 					WtoHeal();
 				else
 					WtoDamage();
@@ -227,17 +227,17 @@ namespace Ultimate_Carry_Prevolution.Plugin
 		{
 			if(!R.IsReady())
 				return;
-			if(Menu.Item("useR_Combo_Amount").GetValue<Slider>().Value > 0)
-				if(EnemysinRange(R.Range, Menu.Item("useR_Combo_Amount").GetValue<Slider>().Value))
+			if(Menu.Item("Combo_useR_onAmount").GetValue<Slider>().Value > 0)
+				if(Utility.CountEnemysInRange((int)R.Range) >= Menu.Item("Combo_useR_onAmount").GetValue<Slider>().Value)
 				{
 					R.Cast();
 					return;
 				}
-			if(Menu.Item("useR_Combo_EnemyHealh").GetValue<Slider>().Value <= 0)
+			if(Menu.Item("Combo_useR_onEnemyHealth").GetValue<Slider>().Value <= 0)
 				return;
 			if(!AllHerosEnemy.Any(hero => hero.IsValidTarget(R.Range) &&
 											  hero.Health / hero.MaxHealth * 100 <
-											  Menu.Item("useR_Combo_EnemyHealh").GetValue<Slider>().Value))
+											  Menu.Item("Combo_useR_onEnemyHealth").GetValue<Slider>().Value))
 				return;
 			R.Cast();
 		}
