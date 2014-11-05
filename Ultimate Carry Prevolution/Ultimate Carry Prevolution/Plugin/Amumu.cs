@@ -23,13 +23,13 @@ namespace Ultimate_Carry_Prevolution.Plugin
 			Q = new Spell(SpellSlot.Q, 1080);
 			Q.SetSkillshot((float)0.25, 90, 2000, true, SkillshotType.SkillshotLine);
 
-			W = new Spell(SpellSlot.W, 150);
+			W = new Spell(SpellSlot.W, 300);
 			W.SetSkillshot((float)0.15, 300, float.MaxValue, false, SkillshotType.SkillshotCircle);
 
-			E = new Spell(SpellSlot.E, 175);
+			E = new Spell(SpellSlot.E, 350);
 			E.SetSkillshot((float)0.225, 350, float.MaxValue, false, SkillshotType.SkillshotCircle);
 
-			R = new Spell(SpellSlot.R, 275);
+			R = new Spell(SpellSlot.R, 550);
 			R.SetSkillshot((float)0.30, 550, float.MaxValue, false, SkillshotType.SkillshotCircle); 
 		}
 
@@ -57,7 +57,7 @@ namespace Ultimate_Carry_Prevolution.Plugin
 					laneClearMenu.AddItem(new MenuItem("LaneClear_useQ_Mode", "Use Q").SetValue(new StringList(new[] { "Off", "On", "Only out of range" }, 2)));
 					AddSpelltoMenu(laneClearMenu, "W", true);
 					AddSpelltoMenu(laneClearMenu, "E", true);
-					AddManaManagertoMenu(harassMenu, 0);
+					AddManaManagertoMenu(laneClearMenu, 0);
 					champMenu.AddSubMenu(laneClearMenu);
 				}
 
@@ -165,7 +165,7 @@ namespace Ultimate_Carry_Prevolution.Plugin
 		public override void OnLaneClear()
 		{
 			if(Menu.Item("LaneClear_useQ_Mode").GetValue<StringList>().SelectedIndex > 0 && ManaManagerAllowCast())
-				Cast_Q(Menu.Item("LaneClear_useQ_Mode").GetValue<StringList>().SelectedIndex, true);
+				Cast_Q(Menu.Item("LaneClear_useQ_Mode").GetValue<StringList>().SelectedIndex, false);
 			if(IsSpellActive("W") && ManaManagerAllowCast())
 				Cast_W(false);
 			if(IsSpellActive("E") && ManaManagerAllowCast())
@@ -180,15 +180,14 @@ namespace Ultimate_Carry_Prevolution.Plugin
 			var target = SimpleTs.GetTarget(W.Range + Menu.Item("Misc_useW_turnOff").GetValue<Slider>().Value, SimpleTs.DamageType.Magical);
 			var target2 = SimpleTs.GetTarget(W.Range, SimpleTs.DamageType.Magical);
 			var minions = MinionManager.GetMinions(ObjectManager.Player.ServerPosition, W.Range, MinionTypes.All, MinionTeam.NotAlly);
-
+				
 			if(xSLxOrbwalker.Mode.Combo == xSLxOrbwalker.CurrentMode && target == null)
 			{
 				W.Cast();
 				return;
 			}
-			if(xSLxOrbwalker.Mode.Combo != xSLxOrbwalker.CurrentMode || (target2 != null && minions.Count != 0))
-				return;
-			W.Cast();
+			if(xSLxOrbwalker.Mode.Combo != xSLxOrbwalker.CurrentMode && (target2 == null && minions.Count == 0))
+				W.Cast();
 		}
 		private void Cast_Q(int mode, bool mode2)
 		{
@@ -221,12 +220,12 @@ namespace Ultimate_Carry_Prevolution.Plugin
 			}
 			else
 			{
-				var minion = MinionManager.GetMinions(ObjectManager.Player.ServerPosition, Q.Range, MinionTypes.All, MinionTeam.NotAlly, MinionOrderTypes.MaxHealth).FirstOrDefault(x => Q.GetPrediction(x).Hitchance >= HitChance.Medium);
+				var minion = MinionManager.GetMinions(ObjectManager.Player.ServerPosition, Q.Range, MinionTypes.All, MinionTeam.NotAlly, MinionOrderTypes.MaxHealth).FirstOrDefault();
 
 				if(minion == null)
 					return;
-				if(mode == 1 || (mode == 2 && !Orbwalking.InAutoAttackRange(minion)))
-					Q.CastIfHitchanceEquals(minion, HitChance.Medium);
+				if(mode == 1 || (mode == 2 && !xSLxOrbwalker.InAutoAttackRange(minion)))
+					Q.Cast(minion, UsePackets());
 			}
 		}
 
@@ -270,18 +269,18 @@ namespace Ultimate_Carry_Prevolution.Plugin
 		{
 			if(!R.IsReady() || Menu.Item("Combo_useR_onAmount").GetValue<Slider>().Value <= 0)
 				return;
-			var Hits = 0;
+			var hits = 0;
 			var kills = 0;
 			foreach(var enemy in from enemy in AllHerosEnemy.Where(x => x.IsValidTarget(R.Range))
 								 let prediction = Prediction.GetPrediction(enemy, R.Delay)
 								 where prediction != null && prediction.UnitPosition.Distance(MyHero.ServerPosition) <= R.Range
 								 select enemy)
 			{
-				Hits += 1;
+				hits += 1;
 				if(MyHero.GetSpellDamage(enemy, SpellSlot.R) >= enemy.Health)
 					kills += 1;
 			}
-			if(Hits >= Menu.Item("Combo_useR_onAmount").GetValue<Slider>().Value || (kills >= 1 && GetHealthPercent() <= 15))
+			if(hits >= Menu.Item("Combo_useR_onAmount").GetValue<Slider>().Value || (kills >= 1 && GetHealthPercent() <= 15))
 				R.Cast();
 		}
 
