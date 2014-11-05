@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using LeagueSharp;
 using LeagueSharp.Common;
+using xSLx_Orbwalker;
 
 namespace Ultimate_Carry_Prevolution.Plugin
 {
@@ -37,42 +39,38 @@ namespace Ultimate_Carry_Prevolution.Plugin
 			{
 				var comboMenu = new Menu("Combo", "Combo");
 				{
+					comboMenu.AddItem(new MenuItem("Combo_useQ_Mode", "Use Q").SetValue(new StringList(new[] { "Off", "On", "Only out of range" }, 1)));
 					AddSpelltoMenu(comboMenu, "W", true);
 					AddSpelltoMenu(comboMenu, "E", true);
 					comboMenu.AddItem(new MenuItem("Combo_useR_onAmount", "R on Enemys in Range").SetValue(new Slider(2, 5, 0)));
-					comboMenu.AddItem(new MenuItem("Combo_useR_onEnemyHealth", "R on Enemy %Health <").SetValue(new Slider(60, 100, 0)));
 					champMenu.AddSubMenu(comboMenu);
 				}
 				var harassMenu = new Menu("Harass", "Harass");
 				{
-					AddSpelltoMenu(harassMenu, "Q", true);
-					AddSpelltoMenu(harassMenu, "Q_Danger", true, "Q inside Dangerzone");
+					AddSpelltoMenu(harassMenu, "W", true);
 					AddSpelltoMenu(harassMenu, "E", true);
+					AddManaManagertoMenu(harassMenu,30);
 					champMenu.AddSubMenu(harassMenu);
 				}
 				var laneClearMenu = new Menu("LaneClear", "LaneClear");
 				{
-					AddSpelltoMenu(laneClearMenu, "Q", true);
+					laneClearMenu.AddItem(new MenuItem("LaneClear_useQ_Mode", "Use Q").SetValue(new StringList(new[] { "Off", "On", "Only out of range" }, 2)));
+					AddSpelltoMenu(laneClearMenu, "W", true);
 					AddSpelltoMenu(laneClearMenu, "E", true);
+					AddManaManagertoMenu(harassMenu, 0);
 					champMenu.AddSubMenu(laneClearMenu);
 				}
-				var fleeMenu = new Menu("Flee", "Flee");
-				{
-					AddSpelltoMenu(fleeMenu, "Q", true, "Use Q to Mouse");
-					AddSpelltoMenu(fleeMenu, "E", true, "Use E to slow Enemy");
-					champMenu.AddSubMenu(fleeMenu);
-				}
+
 				var miscMenu = new Menu("Misc", "Misc");
 				{
-					miscMenu.AddItem(new MenuItem("Misc_useW_Autoswitch", "Switch W Automatic").SetValue(true));
-					miscMenu.AddItem(new MenuItem("Misc_useW_Autoswitch_health", "Use E to slow Enemy").SetValue(new Slider(60, 100, 0)));
-					miscMenu.AddItem(new MenuItem("Misc_useW_Autoswitch_priorityhealth", "Heal Priority farming").SetValue(true));
+					miscMenu.AddItem(new MenuItem("Misc_useW_turnOff", "turn off W if no Enemy in Range").SetValue(new Slider(300, 600, 0)));
 					champMenu.AddSubMenu(miscMenu);
 				}
 				var drawMenu = new Menu("Drawing", "Drawing");
 				{
 					drawMenu.AddItem(new MenuItem("Draw_Disabled", "Disable All").SetValue(false));
 					drawMenu.AddItem(new MenuItem("Draw_Q", "Draw Q").SetValue(true));
+					drawMenu.AddItem(new MenuItem("Draw_W", "Draw W").SetValue(true));
 					drawMenu.AddItem(new MenuItem("Draw_E", "Draw E").SetValue(true));
 					drawMenu.AddItem(new MenuItem("Draw_R", "Draw R").SetValue(true));
 
@@ -93,5 +91,202 @@ namespace Ultimate_Carry_Prevolution.Plugin
 			Menu.AddToMainMenu();
 
 		}
+
+		IEnumerable<SpellSlot> GetSpellCombo()
+		{
+			var spellCombo = new List<SpellSlot>();
+			if(Q.IsReady())
+				spellCombo.Add(SpellSlot.Q);
+			if(W.IsReady())
+				spellCombo.Add(SpellSlot.W);
+			if(E.IsReady())
+				spellCombo.Add(SpellSlot.E);
+			if(R.IsReady())
+				spellCombo.Add(SpellSlot.R);
+			return spellCombo;
+		}
+
+		private float GetComboDamage(Obj_AI_Base target)
+		{
+			double comboDamage = (float)ObjectManager.Player.GetComboDamage(target, GetSpellCombo());
+			return (float)(comboDamage + ObjectManager.Player.GetAutoAttackDamage(target));
+		}
+
+		public override void OnDraw()
+		{
+			if(Menu.Item("Draw_Disabled").GetValue<bool>())
+			{
+				xSLxOrbwalker.DisableDrawing();
+				return;
+			}
+			xSLxOrbwalker.EnableDrawing();
+
+			if(Menu.Item("Draw_Q").GetValue<bool>())
+				if(Q.Level > 0)
+					Utility.DrawCircle(MyHero.Position, Q.Range, Q.IsReady() ? Color.Green : Color.Red);
+
+			if(Menu.Item("Draw_W").GetValue<bool>())
+				if(W.Level > 0)
+					Utility.DrawCircle(MyHero.Position, W.Range, W.IsReady() ? Color.Green : Color.Red);
+
+			if(Menu.Item("Draw_E").GetValue<bool>())
+				if(E.Level > 0)
+					Utility.DrawCircle(MyHero.Position, E.Range, E.IsReady() ? Color.Green : Color.Red);
+
+			if(Menu.Item("Draw_R").GetValue<bool>())
+				if(R.Level > 0)
+					Utility.DrawCircle(MyHero.Position, R.Range, R.IsReady() ? Color.Green : Color.Red);
+		}
+
+		public override void OnPassive()
+		{
+			WTurnOffCheck();
+		}
+
+		public override void OnCombo()
+		{
+			if (Menu.Item("Combo_useQ_Mode").GetValue<StringList>().SelectedIndex > 0)
+				Cast_Q(Menu.Item("Combo_useQ_Mode").GetValue<StringList>().SelectedIndex,true);
+			if(IsSpellActive("W"))
+				Cast_W(true);
+			if(IsSpellActive("E"))
+				Cast_E(true);
+			Cast_R();
+		}
+
+		public override void OnHarass()
+		{
+			if(IsSpellActive("W") && ManaManagerAllowCast() )
+				Cast_W(true);
+			if(IsSpellActive("E") && ManaManagerAllowCast() )
+				Cast_E(true);
+		}
+
+		public override void OnLaneClear()
+		{
+			if(Menu.Item("LaneClear_useQ_Mode").GetValue<StringList>().SelectedIndex > 0 && ManaManagerAllowCast())
+				Cast_Q(Menu.Item("LaneClear_useQ_Mode").GetValue<StringList>().SelectedIndex, true);
+			if(IsSpellActive("W") && ManaManagerAllowCast())
+				Cast_W(false);
+			if(IsSpellActive("E") && ManaManagerAllowCast())
+				Cast_E(false);
+			Cast_R();
+		}
+
+		private void WTurnOffCheck()
+		{
+			if(MyHero.Spellbook.GetSpell(SpellSlot.W).ToggleState != 2 || !W.IsReady())
+				return;
+			var target = SimpleTs.GetTarget(W.Range + Menu.Item("Misc_useW_turnOff").GetValue<Slider>().Value, SimpleTs.DamageType.Magical);
+			var target2 = SimpleTs.GetTarget(W.Range, SimpleTs.DamageType.Magical);
+			var minions = MinionManager.GetMinions(ObjectManager.Player.ServerPosition, W.Range, MinionTypes.All, MinionTeam.NotAlly);
+
+			if(xSLxOrbwalker.Mode.Combo == xSLxOrbwalker.CurrentMode && target == null)
+			{
+				W.Cast();
+				return;
+			}
+			if(xSLxOrbwalker.Mode.Combo != xSLxOrbwalker.CurrentMode || (target2 != null && minions.Count != 0))
+				return;
+			W.Cast();
+		}
+		private void Cast_Q(int mode, bool mode2)
+		{
+			if(!Q.IsReady())
+				return;
+			if(mode2)
+			{
+				if(R.IsReady() && Menu.Item("Combo_useR_onAmount").GetValue<Slider>().Value > 0)
+				{
+					var couldHitTargets = 0;
+					Obj_AI_Base bestTarget = null;
+					foreach(var unit in ObjectManager.Get<Obj_AI_Base>().Where(x => x.IsValidTarget(Q.Range) && Q.GetPrediction(x).Hitchance >= HitChance.High))
+					{
+						var targetsHit = Utility.CountEnemysInRange((int)R.Range, unit);
+
+						if(targetsHit <= couldHitTargets &&
+							(bestTarget == null || targetsHit < couldHitTargets || unit.Type != GameObjectType.obj_AI_Hero))
+							continue;
+						couldHitTargets = targetsHit;
+						bestTarget = unit;
+					}
+					if(couldHitTargets >= Menu.Item("Combo_useR_onAmount").GetValue<Slider>().Value)
+						Q.CastIfHitchanceEquals(bestTarget, HitChance.High);
+				}
+				var target = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Magical);
+				if(target == null)
+					return;
+				if(mode == 1 || (mode == 2 && !xSLxOrbwalker.InAutoAttackRange(target)))
+					Q.CastIfHitchanceEquals(target, HitChance.High);
+			}
+			else
+			{
+				var minion = MinionManager.GetMinions(ObjectManager.Player.ServerPosition, Q.Range, MinionTypes.All, MinionTeam.NotAlly, MinionOrderTypes.MaxHealth).FirstOrDefault(x => Q.GetPrediction(x).Hitchance >= HitChance.Medium);
+
+				if(minion == null)
+					return;
+				if(mode == 1 || (mode == 2 && !Orbwalking.InAutoAttackRange(minion)))
+					Q.CastIfHitchanceEquals(minion, HitChance.Medium);
+			}
+		}
+
+		private void Cast_W(bool mode)
+		{
+			if(!W.IsReady() || MyHero.Spellbook.GetSpell(SpellSlot.W).ToggleState == 2)
+				return;
+			if(mode)
+			{
+				var target = SimpleTs.GetTarget(W.Range, SimpleTs.DamageType.Magical);
+				if(target != null)
+					W.Cast();
+			}
+			else
+			{
+				var minions = MinionManager.GetMinions(ObjectManager.Player.ServerPosition, W.Range, MinionTypes.All, MinionTeam.NotAlly);
+				if(minions.Count >= 3 || minions.Any(x => x.Team == GameObjectTeam.Neutral))
+					W.Cast();
+			}
+		}
+
+		private void Cast_E(bool mode)
+		{
+			if(!W.IsReady())
+				return;
+			if(mode)
+			{
+				var target = SimpleTs.GetTarget(E.Range, SimpleTs.DamageType.Magical);
+				if(target != null)
+					E.Cast();
+			}
+			else
+			{
+				var minions = MinionManager.GetMinions(ObjectManager.Player.ServerPosition, E.Range, MinionTypes.All, MinionTeam.NotAlly);
+				if(minions.Count >= 3 || minions.Any(x => x.Team == GameObjectTeam.Neutral))
+					E.Cast();
+			}
+		}
+
+		private void Cast_R()
+		{
+			if(!R.IsReady() || Menu.Item("Combo_useR_onAmount").GetValue<Slider>().Value <= 0)
+				return;
+			var Hits = 0;
+			var kills = 0;
+			foreach(var enemy in from enemy in AllHerosEnemy.Where(x => x.IsValidTarget(R.Range))
+								 let prediction = Prediction.GetPrediction(enemy, R.Delay)
+								 where prediction != null && prediction.UnitPosition.Distance(MyHero.ServerPosition) <= R.Range
+								 select enemy)
+			{
+				Hits += 1;
+				if(MyHero.GetSpellDamage(enemy, SpellSlot.R) >= enemy.Health)
+					kills += 1;
+			}
+			if(Hits >= Menu.Item("Combo_useR_onAmount").GetValue<Slider>().Value || (kills >= 1 && GetHealthPercent() <= 15))
+				R.Cast();
+		}
+
+
+
+
 	}
 }

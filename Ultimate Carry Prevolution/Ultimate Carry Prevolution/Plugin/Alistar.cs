@@ -49,12 +49,14 @@ namespace Ultimate_Carry_Prevolution.Plugin
 				{
 					AddSpelltoMenu(harassMenu, "Q", true);
 					AddSpelltoMenu(harassMenu, "W", true);
+					AddManaManagertoMenu(harassMenu, 30);
 					champMenu.AddSubMenu(harassMenu);
 				}
 				var laneClearMenu = new Menu("LaneClear", "LaneClear");
 				{
 					AddSpelltoMenu(laneClearMenu, "Q", true);
-					laneClearMenu.AddItem(new MenuItem("LaneClear_useQ_minHit", "Use Q if min. hit").SetValue(new Slider(2, 1, 6)));	
+					laneClearMenu.AddItem(new MenuItem("LaneClear_useQ_minHit", "Use Q if min. hit").SetValue(new Slider(2, 1, 6)));
+					AddManaManagertoMenu(laneClearMenu, 20);
 					champMenu.AddSubMenu(laneClearMenu);
 				}
 
@@ -127,7 +129,7 @@ namespace Ultimate_Carry_Prevolution.Plugin
 
 		public override void OnPossibleToInterrupt(Obj_AI_Base unit, InterruptableSpell spell)
 		{
-			if(spell.DangerLevel < InterruptableDangerLevel.High || unit.IsAlly)
+			if(spell.DangerLevel < InterruptableDangerLevel.Medium  || unit.IsAlly)
 				return;
 
 			if (Menu.Item("Misc_useQ_Interrupt").GetValue<bool>())
@@ -180,15 +182,15 @@ namespace Ultimate_Carry_Prevolution.Plugin
 
 		public override void OnHarass()
 		{
-			if(IsSpellActive("Q"))
+			if(IsSpellActive("Q") && ManaManagerAllowCast())
 				Cast_Q(true);
-			if(IsSpellActive("W"))
+			if(IsSpellActive("W") && ManaManagerAllowCast())
 				Cast_W();
 		}
 
 		public override void OnLaneClear()
 		{
-			if (IsSpellActive("Q"))
+			if(IsSpellActive("Q") && ManaManagerAllowCast())
 				Cast_Q(false);
 		}
 
@@ -206,7 +208,7 @@ namespace Ultimate_Carry_Prevolution.Plugin
 			else
 			{
 				if(MinionManager.GetMinions(MyHero.Position, Q.Range).Count >= Menu.Item("LaneClear_useQ_minHit").GetValue<Slider>().Value)
-					E.Cast();
+					Q.Cast();
 				foreach(var minion in MinionManager.GetMinions(MyHero.ServerPosition, Q.Range, MinionTypes.All,
 					MinionTeam.Neutral, MinionOrderTypes.MaxHealth).Where(minion => MyHero.Distance(minion) <= Q.Range))
 					Q.Cast();
