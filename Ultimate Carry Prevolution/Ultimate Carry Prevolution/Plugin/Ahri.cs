@@ -105,8 +105,8 @@ namespace Ultimate_Carry_Prevolution.Plugin
 
 		private float GetComboDamage(Obj_AI_Base target)
 		{
-			double comboDamage = (float)ObjectManager.Player.GetComboDamage(target, GetSpellCombo());
-			return (float)(comboDamage + ObjectManager.Player.GetAutoAttackDamage(target));
+			double comboDamage = (float)MyHero.GetComboDamage(target, GetSpellCombo());
+			return (float)(comboDamage + MyHero.GetAutoAttackDamage(target));
 		}
 
 		public override void OnDraw()
@@ -164,7 +164,7 @@ namespace Ultimate_Carry_Prevolution.Plugin
 				Cast_BasicSkillshot_AOE_Farm(Q);
 			if(IsSpellActive("W") && ManaManagerAllowCast())
 			{
-				var minions = MinionManager.GetMinions(ObjectManager.Player.ServerPosition, W.Range, MinionTypes.All, MinionTeam.NotAlly);
+				var minions = MinionManager.GetMinions(MyHero.ServerPosition, W.Range, MinionTypes.All, MinionTeam.NotAlly);
 				if(minions.Any())
 				{
 					Cast_W(true);
@@ -207,13 +207,13 @@ namespace Ultimate_Carry_Prevolution.Plugin
 			if(EnemysinRange(500))
 				return true;
 			var mousePos = Game.CursorPos;
-			var enemiesNearMouse = AllHerosEnemy.Where(x => x.Distance(ObjectManager.Player) < R.Range && x.Distance(mousePos) < 650);
+			var enemiesNearMouse = AllHerosEnemy.Where(x => x.Distance(MyHero) < R.Range && x.Distance(mousePos) < 650);
 			var objAiHeroes = enemiesNearMouse as Obj_AI_Hero[] ?? enemiesNearMouse.ToArray();
 			if(!objAiHeroes.Any())
 				return false;
 			if(IsRActive())
 				return true;
-			var enoughMana = ObjectManager.Player.Mana > ObjectManager.Player.Spellbook.GetSpell(SpellSlot.Q).ManaCost + ObjectManager.Player.Spellbook.GetSpell(SpellSlot.E).ManaCost + ObjectManager.Player.Spellbook.GetSpell(SpellSlot.R).ManaCost;
+			var enoughMana = MyHero.Mana > MyHero.Spellbook.GetSpell(SpellSlot.Q).ManaCost + MyHero.Spellbook.GetSpell(SpellSlot.E).ManaCost + MyHero.Spellbook.GetSpell(SpellSlot.R).ManaCost;
 			if(Menu.Item("Combo_useR_onUseActivate").GetValue<bool>() || !(Q.IsReady() && E.IsReady()) || !enoughMana)
 				return false;
 			var friendsNearMouse = AllHerosFriend.Where(x => x.IsMe || x.Distance(mousePos) < 650);
@@ -231,7 +231,7 @@ namespace Ultimate_Carry_Prevolution.Plugin
 
 		private bool IsRActive()
 		{
-			return ObjectManager.Player.HasBuff("AhriTumble", true);
+			return MyHero.HasBuff("AhriTumble", true);
 		}
 
 	}

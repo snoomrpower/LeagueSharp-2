@@ -34,6 +34,8 @@ namespace Ultimate_Carry_Prevolution
 			Game.OnGameUpdate += OnGameUpdate;
 			Game.OnGameUpdate += OnGameUpdateModes;
 			Drawing.OnDraw += OnDraw;
+			Interrupter.OnPossibleToInterrupt += OnPossibleToInterrupt;
+			AntiGapcloser.OnEnemyGapcloser += OnGapClose;
 		}
 
 		private void OnGameUpdateModes(EventArgs args)
@@ -174,11 +176,18 @@ namespace Ultimate_Carry_Prevolution
 			return true;
 		}
 
-		public float GetManaPercent()
+		public float GetManaPercent(Obj_AI_Hero unit =null)
 		{
-			return (MyHero.Mana / MyHero.MaxMana) * 100f;
+			if (unit == null)
+				unit = MyHero;
+			return (unit.Mana / unit.MaxMana) * 100f;
 		}
-
+		public float GetHealthPercent(Obj_AI_Hero unit = null)
+		{
+			if(unit == null)
+				unit = MyHero;
+			return (unit.Health / unit.MaxHealth) * 100f;
+		}
 		public string GetSpellName(SpellSlot slot, Obj_AI_Hero unit = null)
 		{
 			return unit != null ? unit.Spellbook.GetSpell(slot).Name : MyHero.Spellbook.GetSpell(slot).Name;
@@ -197,6 +206,10 @@ namespace Ultimate_Carry_Prevolution
 		public Vector2 V2E(Vector3 from, Vector3 direction, float distance)
 		{
 			return from.To2D() + distance * Vector3.Normalize(direction - from).To2D();
+		}
+		public Vector3 V3E(Vector3 from, Vector3 direction, float distance)
+		{
+			return from + distance * Vector3.Normalize(direction - from);
 		}
 		public bool HasBuff(Obj_AI_Base target, string buffName)
 		{
@@ -225,6 +238,15 @@ namespace Ultimate_Carry_Prevolution
 		public virtual void OnDraw()
 		{
 			// Virtual OnDraw
+		}
+		public virtual void OnGapClose(ActiveGapcloser gapcloser)
+		{
+			// Virtual OnGapClose
+		}
+
+		public virtual void OnPossibleToInterrupt(Obj_AI_Base unit, InterruptableSpell spell)
+		{
+			// Virtual OnPossibleToInterrupt
 		}
 		public virtual void OnStandby()
 		{

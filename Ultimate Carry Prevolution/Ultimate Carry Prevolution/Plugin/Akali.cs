@@ -28,7 +28,7 @@ namespace Ultimate_Carry_Prevolution.Plugin
 
 		private void LoadMenu()
 		{
-			var champMenu = new Menu("Ahri Plugin", "Ahri");
+			var champMenu = new Menu("Akali Plugin", "Akali");
 			{
 				var comboMenu = new Menu("Combo", "Combo");
 				{
