@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using LeagueSharp;
 using LeagueSharp.Common;
 using SharpDX;
@@ -114,27 +113,56 @@ namespace Ultimate_Carry_Prevolution.Plugin
 			return (float)(comboDamage + ObjectManager.Player.GetAutoAttackDamage(target));
 		}
 
+		public override void OnGapClose(ActiveGapcloser gapcloser)
+		{
+			if(gapcloser.Sender.IsAlly)
+				return;
+
+			if (Menu.Item("Misc_useQ_AntiGapClose").GetValue<bool>())
+				Q.Cast();
+
+			if (Menu.Item("Misc_useW_AntiGapClose").GetValue<bool>())
+				W.Cast(gapcloser.Sender, UsePackets());
+		}
+
+		public override void OnPossibleToInterrupt(Obj_AI_Base unit, InterruptableSpell spell)
+		{
+			if(spell.DangerLevel < InterruptableDangerLevel.High || unit.IsAlly)
+				return;
+
+			if (Menu.Item("Misc_useQ_Interrupt").GetValue<bool>())
+				Q.Cast();
+
+			if (Menu.Item("Misc_useW_Interrupt").GetValue<bool>())
+				W.Cast(unit, UsePackets());
+		}
 		public override void OnPassive()
 		{
-			CheckHeals();
-		
+			CheckHeals();		
 		}
 
 		public override void OnDraw()
 		{
-
-			foreach(var enemy in AllHerosEnemy.Where(hero => hero.Distance(MyHero) < 2000))
+			if(Menu.Item("Draw_Disabled").GetValue<bool>())
 			{
-				foreach(var tower in ObjectManager.Get<Obj_AI_Turret>().Where(tower => tower.IsAlly && tower.Health > 0 && tower.Distance(MyHero) < 1500))
-				{
-					Utility.DrawCircle(V3E(enemy.Position, tower.Position, -50), 50, Color.Black);
-				}
-				foreach(var friend in AllHerosFriend.Where(hero => !hero.IsMe && hero.Distance(MyHero) < 800 + hero.AttackRange && GetHealthPercent(hero) > 30 && enemy.IsValidTarget()))
-				{
-					Utility.DrawCircle(V3E(enemy.Position, friend.Position, -50), 50, Color.Black);
-				}
+				xSLxOrbwalker.DisableDrawing();
+				return;
 			}
+			xSLxOrbwalker.EnableDrawing();
+
+			if(Menu.Item("Draw_Q").GetValue<bool>())
+				if(Q.Level > 0)
+					Utility.DrawCircle(MyHero.Position, Q.Range, Q.IsReady() ? Color.Green : Color.Red);
+
+			if(Menu.Item("Draw_W").GetValue<bool>())
+				if(W.Level > 0)
+					Utility.DrawCircle(MyHero.Position, W.Range, W.IsReady() ? Color.Green : Color.Red);
+
+			if(Menu.Item("Draw_E").GetValue<bool>())
+				if(E.Level > 0)
+					Utility.DrawCircle(MyHero.Position, E.Range, E.IsReady() ? Color.Green : Color.Red);
 		}
+
 		public override void OnCombo()
 		{
 			if (IsSpellActive("Q") && IsSpellActive("W"))

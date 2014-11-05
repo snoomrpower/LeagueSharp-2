@@ -129,7 +129,6 @@ namespace Ultimate_Carry_Prevolution.Plugin
 			if(Menu.Item("Draw_R").GetValue<bool>())
 				if(R.Level > 0)
 					Utility.DrawCircle(MyHero.Position, R.Range, R.IsReady() ? Color.Green : Color.Red);
-
 		}
 
 		public override void OnPassive()
