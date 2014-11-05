@@ -178,6 +178,20 @@ namespace Ultimate_Carry_Prevolution.Plugin
 				Cast_R();
 		}
 
+		public override void OnHarass()
+		{
+			if(IsSpellActive("Q"))
+				Cast_Q(true);
+			if(IsSpellActive("W"))
+				Cast_W();
+		}
+
+		public override void OnLaneClear()
+		{
+			if (IsSpellActive("Q"))
+				Cast_Q(false);
+		}
+
 		private void Cast_Q(bool mode)
 		{
 			if(!Q.IsReady())

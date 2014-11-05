@@ -133,6 +133,20 @@ namespace xSLx_Orbwalker
 			Game.OnGameUpdate += OnUpdate;
 			Obj_AI_Base.OnProcessSpellCast += OnProcessSpell;
 			GameObject.OnCreate += Obj_SpellMissile_OnCreate;
+			Game.OnGameSendPacket += GameSendPacker_Supportmode;
+		}
+
+		private static void GameSendPacker_Supportmode(GamePacketEventArgs args)
+		{
+			if(args.PacketData[0] != Packet.C2S.Move.Header)
+				return;
+			var decodedPacket = Packet.C2S.Move.Decoded(args.PacketData);
+			if(decodedPacket.MoveType != 3 || !GetPossibleTarget().IsMinion ||
+				(!Menu.Item("Harass_Lasthit").GetValue<bool>() && Mode.Harass == CurrentMode))
+				return;
+			if(AllAllys.Any(
+					hero => !hero.IsMe && !hero.IsDead && hero.Distance(GetPossibleTarget()) <= hero.AttackRange + 200))
+				args.Process = false;
 		}
 
 		private static void Obj_SpellMissile_OnCreate(GameObject sender, EventArgs args)

@@ -75,13 +75,13 @@
   <ItemGroup>
     <Compile Include="Champion.cs" />
     <Compile Include="Chat.cs" />
-    <Compile Include="DrawObject.cs" />
     <Compile Include="Events.cs" />
     <Compile Include="Loader.cs" />
     <Compile Include="Plugin\Aatrox.cs" />
     <Compile Include="Plugin\Ahri.cs" />
     <Compile Include="Plugin\Akali.cs" />
     <Compile Include="Plugin\Alistar.cs" />
+    <Compile Include="Plugin\Amumu.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

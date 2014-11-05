@@ -25,7 +25,6 @@ namespace Ultimate_Carry_Prevolution
 
 		public static Menu Menu;
 
-		private List<DrawObject> _drawObjectlist = new List<DrawObject>();
 		public Champion()
 		{
 
