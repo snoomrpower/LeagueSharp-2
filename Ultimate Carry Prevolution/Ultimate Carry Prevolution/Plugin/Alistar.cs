@@ -269,7 +269,8 @@ namespace Ultimate_Carry_Prevolution.Plugin
 					if (target.IsValidTarget( W.Range))
 					{
 						W.Cast(target, UsePackets());
-						var jumpTime = Math.Max(0, MyHero.Distance(target) - 500) * 10 / 25 + 25;
+						var jumpTime = Math.Max(1, 1000 * MyHero.Distance(target) / 2500) ;
+						//var jumpTime = Math.Max(0, MyHero.Distance(target) - 500) * 10 / 25 + 25;
 						Utility.DelayAction.Add((int)jumpTime, () => Q.Cast());
 						_qonDelay = true;
 						return;
