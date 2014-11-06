@@ -82,6 +82,7 @@
     <Compile Include="Plugin\Akali.cs" />
     <Compile Include="Plugin\Alistar.cs" />
     <Compile Include="Plugin\Amumu.cs" />
+    <Compile Include="Plugin\Anivia.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

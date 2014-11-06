@@ -30,17 +30,16 @@ namespace Ultimate_Carry_Prevolution
 
 			LoadBasics();
 
-			Game.OnGameUpdate += OnGameUpdate;
 			Game.OnGameUpdate += OnGameUpdateModes;
 			Drawing.OnDraw += OnDraw;
 			Interrupter.OnPossibleToInterrupt += OnPossibleToInterrupt;
 			AntiGapcloser.OnEnemyGapcloser += OnGapClose;
+			GameObject.OnDelete += ObjSpellMissileOnOnDelete;
+			GameObject.OnCreate += ObjSpellMissileOnOnCreate;
 		}
 
 		private void OnGameUpdateModes(EventArgs args)
 		{
-			OnPassive();
-
 			switch(xSLxOrbwalker.CurrentMode)
 			{
 				case xSLxOrbwalker.Mode.Combo:
@@ -65,6 +64,7 @@ namespace Ultimate_Carry_Prevolution
 					OnStandby();
 					break;
 			}
+			OnPassive();
 		}
 
 		private void LoadBasics()
@@ -237,6 +237,15 @@ namespace Ultimate_Carry_Prevolution
 		public virtual void OnDraw()
 		{
 			// Virtual OnDraw
+		}
+		public virtual void ObjSpellMissileOnOnCreate(GameObject sender, EventArgs args)
+		{
+			// Virtual ObjSpellMissileOnOnCreate
+		}
+
+		public virtual void ObjSpellMissileOnOnDelete(GameObject sender, EventArgs args)
+		{
+			// Virtual ObjSpellMissileOnOnDelete
 		}
 		public virtual void OnGapClose(ActiveGapcloser gapcloser)
 		{
