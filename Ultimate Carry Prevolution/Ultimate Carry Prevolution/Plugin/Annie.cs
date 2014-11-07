@@ -6,7 +6,7 @@ using xSLx_Orbwalker;
 
 namespace Ultimate_Carry_Prevolution.Plugin
 {
-	class Annie : Champion
+	internal class Annie : Champion
 	{
 		public Annie()
 		{
@@ -17,15 +17,15 @@ namespace Ultimate_Carry_Prevolution.Plugin
 		private void SetSpells()
 		{
 			Q = new Spell(SpellSlot.Q, 650);
-			Q.SetTargetted((float)0.25, 1400);
+			Q.SetTargetted((float) 0.25, 1400);
 
 			W = new Spell(SpellSlot.W, 625);
-			W.SetSkillshot((float)0.6, (float)(50 * Math.PI / 180), float.MaxValue, false, SkillshotType.SkillshotCone);
+			W.SetSkillshot((float) 0.6, (float) (50*Math.PI/180), float.MaxValue, false, SkillshotType.SkillshotCone);
 
 			E = new Spell(SpellSlot.E);
 
 			R = new Spell(SpellSlot.R, 600);
-			R.SetSkillshot((float)0.25, 200, float.MaxValue, false, SkillshotType.SkillshotCircle);
+			R.SetSkillshot((float) 0.25, 200, float.MaxValue, false, SkillshotType.SkillshotCircle);
 		}
 
 		private void LoadMenu()
@@ -62,8 +62,8 @@ namespace Ultimate_Carry_Prevolution.Plugin
 
 				var lasthitmenu = new Menu("Lasthit", "Lasthit");
 				{
-					harassMenu.AddItem(new MenuItem("Q_Lasthit_Harass", "Use Q LastHit").SetValue(true));
-					harassMenu.AddItem(new MenuItem("Q_Lasthit_Harass_stun", "Use Q on minion if stun up").SetValue(true));
+					harassMenu.AddItem(new MenuItem("Q_Lasthit_Lasthit", "Use Q LastHit").SetValue(true));
+					harassMenu.AddItem(new MenuItem("Q_Lasthit_Lasthit_stun", "Use Q on minion if stun up").SetValue(true));
 				}
 
 				var miscMenu = new Menu("Misc", "Misc");
@@ -108,26 +108,27 @@ namespace Ultimate_Carry_Prevolution.Plugin
 		{
 			var damage = 0d;
 
-			if(Q.IsReady())
+			if (Q.IsReady())
 				damage += MyHero.GetSpellDamage(enemy, SpellSlot.Q);
 
-			if(W.IsReady())
+			if (W.IsReady())
 				damage += MyHero.GetSpellDamage(enemy, SpellSlot.W);
 
-			if(R.IsReady())
+			if (R.IsReady())
 				damage += MyHero.GetSpellDamage(enemy, SpellSlot.R);
 
-			return (float)damage;
+			return (float) damage;
 		}
 
 		public override void OnAttack(Obj_AI_Base unit, Obj_AI_Base target)
 		{
-			if(unit.IsEnemy && !unit.IsMinion && target.IsMe && Menu.Item("E_AgainAA").GetValue<bool>() && E.IsReady())
+			if (unit.IsEnemy && !unit.IsMinion && target.IsMe && Menu.Item("E_AgainAA").GetValue<bool>() && E.IsReady())
 				E.Cast();
 		}
+
 		public override void OnGapClose(ActiveGapcloser gapcloser)
 		{
-			if(!gapcloser.Sender.IsEnemy)
+			if (!gapcloser.Sender.IsEnemy)
 				return;
 
 			var buffstate = GetPassiveStacks();
@@ -141,48 +142,48 @@ namespace Ultimate_Carry_Prevolution.Plugin
 			var canCastEr = myMana > rManaCost + eManaCost;
 
 			var unit = gapcloser.Sender;
-			switch(buffstate)
+			switch (buffstate)
 			{
 				case 4:
+				{
+					if (W.IsReady() && Menu.Item("W_GapClose").GetValue<bool>() && unit.IsValidTarget(W.Range))
 					{
-						if(W.IsReady() && Menu.Item("W_GapClose").GetValue<bool>() && unit.IsValidTarget(W.Range))
-						{
-							W.Cast(unit, UsePackets());
-							return;
-						}
-						if(Q.IsReady() && Menu.Item("Q_GapClose").GetValue<bool>() && unit.IsValidTarget(Q.Range))
-						{
-							Q.CastOnUnit(unit, UsePackets());
-							return;
-						}
-						if(R.IsReady() && Menu.Item("R_GapClose").GetValue<bool>() && unit.IsValidTarget(R.Range))
-						{
-							R.Cast(unit, UsePackets());
-						}
+						W.Cast(unit, UsePackets());
+						return;
 					}
+					if (Q.IsReady() && Menu.Item("Q_GapClose").GetValue<bool>() && unit.IsValidTarget(Q.Range))
+					{
+						Q.CastOnUnit(unit, UsePackets());
+						return;
+					}
+					if (R.IsReady() && Menu.Item("R_GapClose").GetValue<bool>() && unit.IsValidTarget(R.Range))
+					{
+						R.Cast(unit, UsePackets());
+					}
+				}
 					break;
 				case 3:
+				{
+					if (!E.IsReady())
+						return;
+					if (W.IsReady() && Menu.Item("W_GapClose").GetValue<bool>() && unit.IsValidTarget(W.Range) && canCastEw)
 					{
-						if(!E.IsReady())
-							return;
-						if(W.IsReady() && Menu.Item("W_GapClose").GetValue<bool>() && unit.IsValidTarget(W.Range) && canCastEw)
-						{
-							E.Cast();
-							Utility.DelayAction.Add(100, () => W.Cast(unit, UsePackets()));
-							return;
-						}
-						if(Q.IsReady() && Menu.Item("Q_GapClose").GetValue<bool>() && unit.IsValidTarget(Q.Range) && canCastEq)
-						{
-							E.Cast();
-							Utility.DelayAction.Add(100, () => Q.CastOnUnit(unit, UsePackets()));
-							return;
-						}
-						if(R.IsReady() && Menu.Item("R_GapClose").GetValue<bool>() && unit.IsValidTarget(R.Range) && canCastEr)
-						{
-							E.Cast();
-							Utility.DelayAction.Add(100, () => R.Cast(unit, UsePackets()));
-						}
+						E.Cast();
+						Utility.DelayAction.Add(100, () => W.Cast(unit, UsePackets()));
+						return;
 					}
+					if (Q.IsReady() && Menu.Item("Q_GapClose").GetValue<bool>() && unit.IsValidTarget(Q.Range) && canCastEq)
+					{
+						E.Cast();
+						Utility.DelayAction.Add(100, () => Q.CastOnUnit(unit, UsePackets()));
+						return;
+					}
+					if (R.IsReady() && Menu.Item("R_GapClose").GetValue<bool>() && unit.IsValidTarget(R.Range) && canCastEr)
+					{
+						E.Cast();
+						Utility.DelayAction.Add(100, () => R.Cast(unit, UsePackets()));
+					}
+				}
 					break;
 			}
 		}
@@ -198,79 +199,151 @@ namespace Ultimate_Carry_Prevolution.Plugin
 			var canCastEq = myMana > qManaCost + eManaCost;
 			var canCastEw = myMana > wManaCost + eManaCost;
 			var canCastEr = myMana > rManaCost + eManaCost;
-			if(!unit.IsEnemy)
+			if (!unit.IsEnemy)
 				return;
-			switch(buffstate)
+			switch (buffstate)
 			{
 				case 4:
+				{
+					if (W.IsReady() && Menu.Item("W_Interrupt").GetValue<bool>() && unit.IsValidTarget(W.Range))
 					{
-						if(W.IsReady() && Menu.Item("W_Interrupt").GetValue<bool>() && unit.IsValidTarget(W.Range))
-						{
-							W.Cast(unit, UsePackets());
-							return;
-						}
-						if(Q.IsReady() && Menu.Item("Q_Interrupt").GetValue<bool>() && unit.IsValidTarget(Q.Range))
-						{
-							Q.CastOnUnit(unit, UsePackets());
-							return;
-						}
-						if(R.IsReady() && Menu.Item("R_Interrupt").GetValue<bool>() && unit.IsValidTarget(R.Range) && spell.DangerLevel == InterruptableDangerLevel.High)
-						{
-							R.Cast(unit, UsePackets());
-						}
+						W.Cast(unit, UsePackets());
+						return;
 					}
+					if (Q.IsReady() && Menu.Item("Q_Interrupt").GetValue<bool>() && unit.IsValidTarget(Q.Range))
+					{
+						Q.CastOnUnit(unit, UsePackets());
+						return;
+					}
+					if (R.IsReady() && Menu.Item("R_Interrupt").GetValue<bool>() && unit.IsValidTarget(R.Range) &&
+					    spell.DangerLevel == InterruptableDangerLevel.High)
+					{
+						R.Cast(unit, UsePackets());
+					}
+				}
 					break;
 				case 3:
+				{
+					if (!E.IsReady())
+						return;
+					if (W.IsReady() && Menu.Item("W_Interrupt").GetValue<bool>() && unit.IsValidTarget(W.Range) && canCastEw)
 					{
-						if(!E.IsReady())
-							return;
-						if(W.IsReady() && Menu.Item("W_Interrupt").GetValue<bool>() && unit.IsValidTarget(W.Range) && canCastEw)
-						{
-							E.Cast();
-							Utility.DelayAction.Add(100, () => W.Cast(unit, UsePackets()));
-							return;
-						}
-						if(Q.IsReady() && Menu.Item("Q_Interrupt").GetValue<bool>() && unit.IsValidTarget(Q.Range) && canCastEq)
-						{
-							E.Cast();
-							Utility.DelayAction.Add(100, () => Q.CastOnUnit(unit, UsePackets()));
-							return;
-						}
-						if(R.IsReady() && Menu.Item("R_Interrupt").GetValue<bool>() && unit.IsValidTarget(R.Range) && canCastEr && spell.DangerLevel == InterruptableDangerLevel.High)
-						{
-							E.Cast();
-							Utility.DelayAction.Add(100, () => R.Cast(unit, UsePackets()));
-						}
+						E.Cast();
+						Utility.DelayAction.Add(100, () => W.Cast(unit, UsePackets()));
+						return;
 					}
+					if (Q.IsReady() && Menu.Item("Q_Interrupt").GetValue<bool>() && unit.IsValidTarget(Q.Range) && canCastEq)
+					{
+						E.Cast();
+						Utility.DelayAction.Add(100, () => Q.CastOnUnit(unit, UsePackets()));
+						return;
+					}
+					if (R.IsReady() && Menu.Item("R_Interrupt").GetValue<bool>() && unit.IsValidTarget(R.Range) && canCastEr &&
+					    spell.DangerLevel == InterruptableDangerLevel.High)
+					{
+						E.Cast();
+						Utility.DelayAction.Add(100, () => R.Cast(unit, UsePackets()));
+					}
+				}
 					break;
 			}
 		}
 
 		public override void OnCombo()
 		{
-			if(IsSpellActive("R"))
+			if (IsSpellActive("R"))
 				Cast_R();
-			if(IsSpellActive("Q"))
+			if (IsSpellActive("Q"))
 				Cast_Q();
-			if(IsSpellActive("E"))
+			if (IsSpellActive("E"))
 				Cast_E();
-			if(IsSpellActive("W"))
+			if (IsSpellActive("W"))
 				Cast_W();
+		}
+
+		public override void OnHarass()
+		{
+			if (IsSpellActive("Q"))
+				Cast_Q();
+			if (IsSpellActive("E") && ManaManagerAllowCast() )
+				Cast_E();
+			if (IsSpellActive("W") && ManaManagerAllowCast() )
+				Cast_W();
+
 		}
 
 		private void Cast_Q()
 		{
-			if(xSLxOrbwalker.CurrentMode == xSLxOrbwalker.Mode.Combo || xSLxOrbwalker.CurrentMode == xSLxOrbwalker.Mode.Harass)
+			if (!Q.IsReady())
+				return;
+			if (xSLxOrbwalker.CurrentMode == xSLxOrbwalker.Mode.Combo || xSLxOrbwalker.CurrentMode == xSLxOrbwalker.Mode.Harass)
 			{
-				if(!Q.IsReady())
+				if (!Q.IsReady() || !ManaManagerAllowCast())
 					return;
 				var target = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Magical);
-				if(target != null)
+				if (target != null)
+				{
 					Q.CastOnUnit(target, UsePackets());
+					return;
+				}
+			}
+			if (xSLxOrbwalker.CurrentMode == xSLxOrbwalker.Mode.Harass && Menu.Item("Q_Lasthit_Harass").GetValue<bool>())
+			{
+				if (GetPassiveStacks() == 4 && !Menu.Item("Q_Lasthit_Harass_stun").GetValue<bool>())
+					return;
+				var allMinions =
+					MinionManager.GetMinions(MyHero.ServerPosition, Q.Range, MinionTypes.All, MinionTeam.NotAlly).ToList();
+				var minionLastHit =
+					allMinions.Where(
+						x =>
+							HealthPrediction.LaneClearHealthPrediction(x, (int) Q.Delay*1000) < MyHero.GetSpellDamage(x, SpellSlot.Q)*0.95)
+						.OrderBy(x => x.Health);
+
+				if (!minionLastHit.Any())
+					return;
+				var unit = minionLastHit.First();
+				Q.CastOnUnit(unit, UsePackets());
+			}
+
+			if(xSLxOrbwalker.CurrentMode == xSLxOrbwalker.Mode.Lasthit && Menu.Item("Q_Lasthit_Lasthit").GetValue<bool>())
+			{
+				if(GetPassiveStacks() == 4 && !Menu.Item("Q_Lasthit_Lasthit_stun").GetValue<bool>())
+					return;
+				var allMinions =
+					MinionManager.GetMinions(MyHero.ServerPosition, Q.Range, MinionTypes.All, MinionTeam.NotAlly).ToList();
+				var minionLastHit =
+					allMinions.Where(
+						x =>
+							HealthPrediction.LaneClearHealthPrediction(x, (int) Q.Delay*1000) < MyHero.GetSpellDamage(x, SpellSlot.Q)*0.95)
+						.OrderBy(x => x.Health);
+
+				if (!minionLastHit.Any())
+					return;
+				var unit = minionLastHit.First();
+				Q.CastOnUnit(unit, UsePackets());
+			}
+
+			if(xSLxOrbwalker.CurrentMode == xSLxOrbwalker.Mode.Lasthit && Menu.Item("Q_Lasthit_Lasthit").GetValue<bool>())
+			{
+				if(GetPassiveStacks() == 4 && !Menu.Item("Q_Lasthit_Lasthit_stun").GetValue<bool>())
+					return;
+				var allMinions =
+					MinionManager.GetMinions(MyHero.ServerPosition, Q.Range, MinionTypes.All, MinionTeam.NotAlly).ToList();
+				var minionLastHit =
+					allMinions.Where(
+						x =>
+							HealthPrediction.LaneClearHealthPrediction(x, (int)Q.Delay * 1000) < MyHero.GetSpellDamage(x, SpellSlot.Q) * 0.95)
+						.OrderBy(x => x.Health);
+
+				if(!minionLastHit.Any())
+					return;
+				var unit = minionLastHit.First();
+				Q.CastOnUnit(unit, UsePackets());
 			}
 		}
+	
 
-		private void Cast_W()
+	private void Cast_W()
 		{
 			if(xSLxOrbwalker.CurrentMode == xSLxOrbwalker.Mode.Combo || xSLxOrbwalker.CurrentMode == xSLxOrbwalker.Mode.Harass)
 			{

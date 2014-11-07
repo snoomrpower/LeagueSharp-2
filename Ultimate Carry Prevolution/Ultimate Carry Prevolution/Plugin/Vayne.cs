@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using LeagueSharp;
 using LeagueSharp.Common;
+using SharpDX;
 using xSLx_Orbwalker;
+using Color = System.Drawing.Color;
 
 namespace Ultimate_Carry_Prevolution.Plugin
 {
@@ -15,11 +16,15 @@ namespace Ultimate_Carry_Prevolution.Plugin
             LoadMenu();
         }
 
+        public Obj_AI_Base SelectedTarget = null;
+
         private void SetSpells()
         {
             Q = new Spell(SpellSlot.Q);
             Q.SetSkillshot(0.3f, 250f, 1250f, false, SkillshotType.SkillshotCircle);
             
+            W = new Spell(SpellSlot.W);
+
             E = new Spell(SpellSlot.E, 550f);
             E.SetTargetted(0.25f, 1600f);
 
@@ -32,6 +37,7 @@ namespace Ultimate_Carry_Prevolution.Plugin
             {
                 var comboMenu = new Menu("Combo", "Combo");
                 {
+                    comboMenu.AddItem(new MenuItem("Focus_Target", "Force Selected Target").SetValue(true));
                     AddSpelltoMenu(comboMenu, "Q", true);
                     AddSpelltoMenu(comboMenu, "E", true);
                     AddSpelltoMenu(comboMenu, "R", true);
@@ -117,6 +123,24 @@ namespace Ultimate_Carry_Prevolution.Plugin
             return (float)(comboDamage + ObjectManager.Player.GetAutoAttackDamage(target));
         }
 
+        public override void OnPassive()
+        {
+            if (Menu.Item("Focus_Target").GetValue<bool>())
+            {
+                SelectedTarget = (Obj_AI_Base)Hud.SelectedUnit;
+
+                if (SelectedTarget != null && SelectedTarget.IsValidTarget(600) &&
+                    SelectedTarget.Type == GameObjectType.obj_AI_Hero)
+                {
+                    xSLxOrbwalker.ForcedTarget = SelectedTarget;
+                    return;
+                }
+            }
+
+            xSLxOrbwalker.ForcedTarget = null;
+            SelectedTarget = SimpleTs.GetTarget(E.Range, SimpleTs.DamageType.Physical);
+        }
+
         public override void OnCombo()
         {
             if (IsSpellActive("E"))
@@ -131,12 +155,20 @@ namespace Ultimate_Carry_Prevolution.Plugin
                 Cast_E(false);
         }
 
+        public override void OnLaneClear()
+        {
+            if (IsSpellActive("Q") && ManaManagerAllowCast())
+                Q.Cast(Game.CursorPos);
+        }
+
         public override void OnAfterAttack(Obj_AI_Base unit, Obj_AI_Base target)
         {
             if (!unit.IsMe)
                 return;
 
-            if(xSLxOrbwalker.CurrentMode == xSLxOrbwalker.Mode.Combo || xSLxOrbwalker.CurrentMode == xSLxOrbwalker.Mode.Harass || xSLxOrbwalker.CurrentMode == xSLxOrbwalker.Mode.LaneClear)
+            E_Next_AA((Obj_AI_Hero)target);
+            
+            if(xSLxOrbwalker.CurrentMode == xSLxOrbwalker.Mode.Combo || (xSLxOrbwalker.CurrentMode == xSLxOrbwalker.Mode.Harass && ManaManagerAllowCast()))
                 if(IsSpellActive("Q") && Q.IsReady())
                     Q.Cast(Game.CursorPos);
         }
@@ -169,23 +201,24 @@ namespace Ultimate_Carry_Prevolution.Plugin
 
         private void Cast_E(bool mode)
         {
-            var Push_Distance = Menu.Item("Misc_Push_Distance").GetValue<Slider>().Value;
+            var pushDistance = Menu.Item("Misc_Push_Distance").GetValue<Slider>().Value;
             var Target = SimpleTs.GetTarget(E.Range, SimpleTs.DamageType.Physical);
 
-            if (MyHero.Distance(Target) < 100)
+            if (MyHero.Distance(Target) < 50)
                 E.Cast(Target, UsePackets());
 
             var Target_Pred = E.GetPrediction(Target);
-            var Target_Pred_Pos = V3E(Target_Pred.CastPosition, MyHero.ServerPosition, Push_Distance);
+            var Target_Pred_Pos = Target_Pred.UnitPosition + Vector3.Normalize(Target_Pred.UnitPosition - MyHero.ServerPosition)*pushDistance;
 
+            if (IsWall(Target_Pred_Pos.To2D()))
+                E.Cast(Target, UsePackets());
         }
 
-        private void Cast_R()
+        private void Cast_R()//i can see you :D
         {
-            var Target = SimpleTs.GetTarget(E.Range, SimpleTs.DamageType.Physical);
-            var dmg = GetComboDamage(Target) + MyHero.GetAutoAttackDamage(Target) * 3;
+            var dmg = GetComboDamage(SelectedTarget) + MyHero.GetAutoAttackDamage(SelectedTarget) * 6;
 
-            if (dmg > Target.Health)
+            if (dmg > SelectedTarget.Health)
                 R.Cast();
         }
 
