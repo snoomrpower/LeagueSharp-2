@@ -83,6 +83,7 @@
     <Compile Include="Plugin\Alistar.cs" />
     <Compile Include="Plugin\Amumu.cs" />
     <Compile Include="Plugin\Anivia.cs" />
+    <Compile Include="Plugin\Caitlyn.cs" />
     <Compile Include="Plugin\Corki.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
