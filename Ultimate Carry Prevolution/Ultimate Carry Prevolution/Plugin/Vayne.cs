@@ -63,7 +63,7 @@ namespace Ultimate_Carry_Prevolution.Plugin
                     miscMenu.AddItem(new MenuItem("Misc_useE_Gap_Closer", "Use E On Gap Closer").SetValue(true));
                     miscMenu.AddItem(new MenuItem("Misc_useE_Interrupt", "Use E To Interrupt").SetValue(true));
                     miscMenu.AddItem(new MenuItem("Misc_E_Next", "E Next Auto").SetValue(new KeyBind("E".ToCharArray()[0], KeyBindType.Toggle)));
-                    miscMenu.AddItem(new MenuItem("Misc_Push_Distance", "E Push Dist").SetValue(new Slider(400, 400, 500)));
+                    miscMenu.AddItem(new MenuItem("Misc_Push_Distance", "E Push Dist").SetValue(new Slider(350, 350, 400)));
                     champMenu.AddSubMenu(miscMenu);
                 }
 

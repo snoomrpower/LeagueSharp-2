@@ -134,7 +134,6 @@ namespace xSLx_Orbwalker
 			Obj_AI_Base.OnProcessSpellCast += OnProcessSpell;
 			GameObject.OnCreate += Obj_SpellMissile_OnCreate;
 			Game.OnGameProcessPacket += OnProcessPacket;
-			//Game.OnGameSendPacket += GameSendPacker_Supportmode;
 			Obj_AI_Base.OnPlayAnimation += OnAnimation;
 		}
 
@@ -157,20 +156,6 @@ namespace xSLx_Orbwalker
 
 			if (new GamePacket(args.PacketData).ReadInteger(1) == ObjectManager.Player.NetworkId)
 				ResetAutoAttackTimer();
-		}
-
-		private static void GameSendPacker_Supportmode(GamePacketEventArgs args)
-		{
-			if(args.PacketData[0] != Packet.C2S.Move.Header)
-				return;
-			var decodedPacket = Packet.C2S.Move.Decoded(args.PacketData);
-			if(decodedPacket.MoveType != 3 || !GetPossibleTarget().IsMinion ||
-				(!Menu.Item("Harass_Lasthit").GetValue<bool>() && Mode.Harass == CurrentMode))
-				return;
-			if(AllAllys.Any(
-					hero => !hero.IsMe && !hero.IsDead && hero.Distance(GetPossibleTarget()) <= hero.AttackRange + 200))
-				args.Process = false;
-             
 		}
 
 		private static void Obj_SpellMissile_OnCreate(GameObject sender, EventArgs args)
@@ -279,15 +264,11 @@ namespace xSLx_Orbwalker
 				FireBeforeAttack(target);
 				if(!_disableNextAttack)
 				{
-					if(CurrentMode != Mode.Combo)
-						foreach(var obj in ObjectManager.Get<Obj_Building>().Where(obj => obj.Position.Distance(MyHero.Position) <= GetAutoAttackRange() + obj.BoundingRadius / 2 && obj.IsTargetable && (obj.Name.StartsWith("Barracks_") || obj.Name.StartsWith("HQ_"))))
-						{
-							MyHero.IssueOrder(GameObjectOrder.AttackTo, obj.Position);
-							_lastAATick = Environment.TickCount + Game.Ping / 2;
-							return;
-						}
-					if(MyHero.IssueOrder(GameObjectOrder.AttackUnit, target))
-						_lastAATick = Environment.TickCount + Game.Ping / 2;
+					if (Menu.Item("Harass_Lasthit").GetValue<bool>() || CurrentMode != Mode.Harass || !target.IsMinion)
+					{
+						if (MyHero.IssueOrder(GameObjectOrder.AttackUnit, target))
+							_lastAATick = Environment.TickCount + Game.Ping/2;
+					}
 				}
 			}
 			if(!CanMove() || !IsAllowedToMove())
@@ -411,13 +392,6 @@ namespace xSLx_Orbwalker
 
 		public static Obj_AI_Base GetPossibleTarget()
 		{
-			if(ObjectManager.Get<Obj_Building>()
-						.Any(
-							obj =>
-								obj.Position.Distance(MyHero.Position) <= GetAutoAttackRange() + obj.BoundingRadius / 2 && obj.IsTargetable &&
-								 obj.Name.StartsWith("HQ_")))
-				return null;
-
 			if(ForcedTarget != null)
 			{
 				if(InAutoAttackRange(ForcedTarget))
@@ -463,21 +437,6 @@ namespace xSLx_Orbwalker
 							  predHealth <= MyHero.GetAutoAttackDamage(minion, true)
 						select minion)
 					return minion;
-			}
-
-			if(CurrentMode == Mode.Harass || CurrentMode == Mode.LaneClear || CurrentMode == Mode.LaneFreeze)
-			{
-				foreach(
-					var turret in
-						ObjectManager.Get<Obj_AI_Turret>().Where(turret => turret.IsValidTarget(GetAutoAttackRange(MyHero, turret))))
-					return turret;
-				if(
-					ObjectManager.Get<Obj_Building>()
-						.Any(
-							obj =>
-								obj.Position.Distance(MyHero.Position) <= GetAutoAttackRange() + obj.BoundingRadius / 2 && obj.IsTargetable &&
-								(obj.Name.StartsWith("Barracks_") || obj.Name.StartsWith("HQ_"))))
-					return null;
 			}
 
 			if(CurrentMode != Mode.Lasthit)
