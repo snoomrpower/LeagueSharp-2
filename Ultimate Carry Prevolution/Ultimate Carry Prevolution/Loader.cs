@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using LeagueSharp;
-using LeagueSharp.Common;
 
 namespace Ultimate_Carry_Prevolution
 {

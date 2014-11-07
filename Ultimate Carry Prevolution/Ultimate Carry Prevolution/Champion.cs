@@ -36,6 +36,7 @@ namespace Ultimate_Carry_Prevolution
 			AntiGapcloser.OnEnemyGapcloser += OnGapClose;
 			GameObject.OnDelete += ObjSpellMissileOnOnDelete;
 			GameObject.OnCreate += ObjSpellMissileOnOnCreate;
+			Obj_AI_Base.OnProcessSpellCast += Game_OnProcessSpell;
 		    xSLxOrbwalker.AfterAttack += OnAfterAttack;
 			xSLxOrbwalker.OnAttack += OnAttack;
 		}
@@ -243,17 +244,20 @@ namespace Ultimate_Carry_Prevolution
 		}
 		public virtual void OnAttack(Obj_AI_Base unit, Obj_AI_Base target)
 		{
-			throw new NotImplementedException();
+			// Virtual OnAttack
 		}
         public virtual void OnAfterAttack(Obj_AI_Base unit, Obj_AI_Base target)
 	    {
 	        // Virtual OnAfterAttack
 	    }
+		public virtual void Game_OnProcessSpell(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
+		{
+			// Virtual Game_OnProcessSpell
+		}
 		public virtual void ObjSpellMissileOnOnCreate(GameObject sender, EventArgs args)
 		{
 			// Virtual ObjSpellMissileOnOnCreate
 		}
-
 		public virtual void ObjSpellMissileOnOnDelete(GameObject sender, EventArgs args)
 		{
 			// Virtual ObjSpellMissileOnOnDelete
@@ -262,7 +266,6 @@ namespace Ultimate_Carry_Prevolution
 		{
 			// Virtual OnGapClose
 		}
-
 		public virtual void OnPossibleToInterrupt(Obj_AI_Base unit, InterruptableSpell spell)
 		{
 			// Virtual OnPossibleToInterrupt
@@ -271,37 +274,30 @@ namespace Ultimate_Carry_Prevolution
 		{
 			// Virtual OnStandby
 		}
-
 		public virtual void OnFlee()
 		{
 			// Virtual OnFlee
 		}
-
 		public virtual void OnLasthit()
 		{
 			// Virtual OnLasthit
 		}
-
 		public virtual void OnLaneFreeze()
 		{
 			// Virtual OnLaneFreeze
 		}
-
 		public virtual void OnLaneClear()
 		{
 			// Virtual OnLaneClear
 		}
-
 		public virtual void OnHarass()
 		{
 			// Virtual OnHarass
 		}
-
 		public virtual void OnCombo()
 		{
 			// Virtual OnCombo
 		}
-
 		public virtual void OnGameUpdate(EventArgs args)
 		{
 			// Virtual OnGameUpdate
