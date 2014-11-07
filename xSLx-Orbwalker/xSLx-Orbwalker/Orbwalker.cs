@@ -645,9 +645,9 @@ namespace xSLx_Orbwalker
 			foreach(var enemy in AllEnemys.Where(hero => hero.IsValidTarget() && InAutoAttackRange(hero)))
 			{
 				var killHits = CountKillhits(enemy);
+                killableEnemy = enemy;
 				if(killableEnemy != null && (!(killHits < hitsToKill) || enemy.HasBuffOfType(BuffType.Invulnerability)))
 					continue;
-				killableEnemy = enemy;
 				hitsToKill = killHits;
 			}
 			return hitsToKill <= 4 ? killableEnemy : SimpleTs.GetTarget(GetAutoAttackRange() + 100, SimpleTs.DamageType.Physical);
