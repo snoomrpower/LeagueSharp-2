@@ -36,6 +36,7 @@ namespace Ultimate_Carry_Prevolution
 			AntiGapcloser.OnEnemyGapcloser += OnGapClose;
 			GameObject.OnDelete += ObjSpellMissileOnOnDelete;
 			GameObject.OnCreate += ObjSpellMissileOnOnCreate;
+		    xSLxOrbwalker.AfterAttack += OnAfterAttack;
 		}
 
 		private void OnGameUpdateModes(EventArgs args)
@@ -238,6 +239,10 @@ namespace Ultimate_Carry_Prevolution
 		{
 			// Virtual OnDraw
 		}
+        public virtual void OnAfterAttack(Obj_AI_Base unit, Obj_AI_Base target)
+	    {
+	        // Virtual OnAfterAttack
+	    }
 		public virtual void ObjSpellMissileOnOnCreate(GameObject sender, EventArgs args)
 		{
 			// Virtual ObjSpellMissileOnOnCreate
