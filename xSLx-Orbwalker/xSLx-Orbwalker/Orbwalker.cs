@@ -133,11 +133,32 @@ namespace xSLx_Orbwalker
 			Game.OnGameUpdate += OnUpdate;
 			Obj_AI_Base.OnProcessSpellCast += OnProcessSpell;
 			GameObject.OnCreate += Obj_SpellMissile_OnCreate;
-			Game.OnGameSendPacket += GameSendPacker_Supportmode;
+			//Game.OnGameSendPacket += GameSendPacker_Supportmode;
 		}
 
 		private static void GameSendPacker_Supportmode(GamePacketEventArgs args)
 		{
+            if (args.PacketData[0] != 0x34)
+            {
+                return;
+            }
+
+            if (Game.Version.Contains("4.19") && (args.PacketData[5] != 0x11 && args.PacketData[5] != 0x91))
+            {
+                return;
+            }
+
+            if (Game.Version.Contains("4.18") && (args.PacketData[9] != 17))
+            {
+                return;
+            }
+
+            if (new GamePacket(args.PacketData).ReadInteger(1) == ObjectManager.Player.NetworkId)
+            {
+                ResetAutoAttackTimer();
+            }
+
+            /*
 			if(args.PacketData[0] != Packet.C2S.Move.Header)
 				return;
 			var decodedPacket = Packet.C2S.Move.Decoded(args.PacketData);
@@ -147,6 +168,7 @@ namespace xSLx_Orbwalker
 			if(AllAllys.Any(
 					hero => !hero.IsMe && !hero.IsDead && hero.Distance(GetPossibleTarget()) <= hero.AttackRange + 200))
 				args.Process = false;
+             */
 		}
 
 		private static void Obj_SpellMissile_OnCreate(GameObject sender, EventArgs args)
@@ -602,7 +624,7 @@ namespace xSLx_Orbwalker
 			var hitsToKill = double.MaxValue;
 			if(MyHero.ChampionName == "Azir")
 			{
-				foreach(var enemy in AllEnemys.Where(hero => hero.IsValidTarget() && InSoldierAttackRange(hero) && hero.IsEnemy))
+				foreach(var enemy in AllEnemys.Where(hero => hero.IsValidTarget() && InSoldierAttackRange(hero)))
 				{
 					var killHits = CountKillhitsAzirSoldier(enemy);
 					if(killableEnemy != null && (!(killHits < hitsToKill) || enemy.HasBuffOfType(BuffType.Invulnerability)))
@@ -613,14 +635,14 @@ namespace xSLx_Orbwalker
 				if(hitsToKill <= 4)
 					return killableEnemy;
 				Obj_AI_Hero[] mostdmgenemy = { null };
-				foreach(var enemy in AllEnemys.Where(hero => hero.IsValidTarget() && hero.IsEnemy && InSoldierAttackRange(hero)).Where(enemy => mostdmgenemy[0] == null || GetAzirAASandwarriorDamage(enemy) > GetAzirAASandwarriorDamage(mostdmgenemy[0])))
+				foreach(var enemy in AllEnemys.Where(hero => hero.IsValidTarget() && InSoldierAttackRange(hero)).Where(enemy => mostdmgenemy[0] == null || GetAzirAASandwarriorDamage(enemy) > GetAzirAASandwarriorDamage(mostdmgenemy[0])))
 				{
 					mostdmgenemy[0] = enemy;
 				}
 				if(mostdmgenemy[0] != null)
 					return mostdmgenemy[0];
 			}
-			foreach(var enemy in AllEnemys.Where(hero => hero.IsValidTarget() && InAutoAttackRange(hero) && hero.IsEnemy))
+			foreach(var enemy in AllEnemys.Where(hero => hero.IsValidTarget() && InAutoAttackRange(hero)))
 			{
 				var killHits = CountKillhits(enemy);
 				if(killableEnemy != null && (!(killHits < hitsToKill) || enemy.HasBuffOfType(BuffType.Invulnerability)))
