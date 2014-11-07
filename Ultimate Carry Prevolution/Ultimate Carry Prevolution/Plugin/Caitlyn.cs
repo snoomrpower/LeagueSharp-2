@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using LeagueSharp;
 using LeagueSharp.Common;
@@ -212,12 +211,12 @@ namespace Ultimate_Carry_Prevolution.Plugin
                 E.Cast(gapcloser.Sender, UsePackets());
         }
 
-        private void Cast_Inverted_E(Vector3 Position)
+        private void Cast_Inverted_E(Vector3 position)
         {
             if (!E.IsReady())
                 return;
 
-            var pos = ObjectManager.Player.ServerPosition.To2D().Extend(Position.To2D(), -300).To3D();
+            var pos = ObjectManager.Player.ServerPosition.To2D().Extend(position.To2D(), -300).To3D();
 
             E.Cast(pos, UsePackets());
         }
@@ -246,20 +245,20 @@ namespace Ultimate_Carry_Prevolution.Plugin
             }
         }
 
-        private void Cast_W(bool Stun, bool Slow)
+        private void Cast_W(bool stun, bool slow)
         {
-            if ((!Stun && !Slow) || !W.IsReady())
+            if ((!stun && !slow) || !W.IsReady())
                 return;
 
             foreach (var unit in ObjectManager.Get<Obj_AI_Hero>().Where(x => x.IsValidTarget(W.Range) && !x.IsDead && x.IsEnemy))
             {
-                if (Stun && W.GetPrediction(unit).Hitchance == HitChance.Immobile)
+                if (stun && W.GetPrediction(unit).Hitchance == HitChance.Immobile)
                 {
                     W.Cast(unit.ServerPosition, UsePackets());
                     return;
                 }
 
-                if (Slow && unit.HasBuffOfType(BuffType.Slow))
+                if (slow && unit.HasBuffOfType(BuffType.Slow))
                 {
                     W.Cast(unit, UsePackets());
                     return;

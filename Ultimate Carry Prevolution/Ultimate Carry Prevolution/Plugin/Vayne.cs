@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using LeagueSharp;
 using LeagueSharp.Common;
 using SharpDX;
@@ -125,26 +124,28 @@ namespace Ultimate_Carry_Prevolution.Plugin
 
         public override void OnPassive()
         {
-            if (Menu.Item("Focus_Target").GetValue<bool>())
-            {
-                SelectedTarget = (Obj_AI_Base)Hud.SelectedUnit;
+			if(xSLxOrbwalker.CurrentMode != xSLxOrbwalker.Mode.Combo)
+				return;
+			if(Menu.Item("Focus_Target").GetValue<bool>())
+			{
+				SelectedTarget = (Obj_AI_Base)Hud.SelectedUnit;
 
-                if (SelectedTarget != null && SelectedTarget.IsValidTarget(600) &&
-                    SelectedTarget.Type == GameObjectType.obj_AI_Hero)
-                {
-                    xSLxOrbwalker.ForcedTarget = SelectedTarget;
-                    return;
-                }
-            }
+				if(SelectedTarget != null && SelectedTarget.IsValidTarget(600) &&
+					SelectedTarget.Type == GameObjectType.obj_AI_Hero)
+				{
+					xSLxOrbwalker.ForcedTarget = SelectedTarget;
+					return;
+				}
+			}
 
-            xSLxOrbwalker.ForcedTarget = null;
-            SelectedTarget = SimpleTs.GetTarget(E.Range, SimpleTs.DamageType.Physical);
+			xSLxOrbwalker.ForcedTarget = null;
+			SelectedTarget = SimpleTs.GetTarget(E.Range, SimpleTs.DamageType.Physical);
         }
 
         public override void OnCombo()
         {
             if (IsSpellActive("E"))
-                Cast_E(true);
+                Cast_E();
             if (IsSpellActive("R"))
                 Cast_R();
         }
@@ -152,7 +153,7 @@ namespace Ultimate_Carry_Prevolution.Plugin
         public override void OnHarass()
         {
             if (IsSpellActive("E"))
-                Cast_E(false);
+                Cast_E();
         }
 
         public override void OnLaneClear()
@@ -199,26 +200,27 @@ namespace Ultimate_Carry_Prevolution.Plugin
             Menu.Item("Misc_E_Next").SetValue(new KeyBind("E".ToCharArray()[0], KeyBindType.Toggle));
         }
 
-        private void Cast_E(bool mode)
+        private void Cast_E()
         {
             var pushDistance = Menu.Item("Misc_Push_Distance").GetValue<Slider>().Value;
-            var Target = SimpleTs.GetTarget(E.Range, SimpleTs.DamageType.Physical);
+            var target = SimpleTs.GetTarget(E.Range, SimpleTs.DamageType.Physical);
 
-            if (MyHero.Distance(Target) < 50)
-                E.Cast(Target, UsePackets());
+            if (MyHero.Distance(target) < 50)
+                E.Cast(target, UsePackets());
 
-            var Target_Pred = E.GetPrediction(Target);
-            var Target_Pred_Pos = Target_Pred.UnitPosition + Vector3.Normalize(Target_Pred.UnitPosition - MyHero.ServerPosition)*pushDistance;
+            var targetPred = E.GetPrediction(target);
+            var targetPredPos = targetPred.UnitPosition + Vector3.Normalize(targetPred.UnitPosition - MyHero.ServerPosition)*pushDistance;
 
-            if (IsWall(Target_Pred_Pos.To2D()))
-                E.Cast(Target, UsePackets());
+            if (IsWall(targetPredPos.To2D()))
+                E.Cast(target, UsePackets());
         }
 
-        private void Cast_R()//i can see you :D
+        private void Cast_R()
         {
-            var dmg = GetComboDamage(SelectedTarget) + MyHero.GetAutoAttackDamage(SelectedTarget) * 6;
+	        var target = xSLxOrbwalker.GetPossibleTarget();
+			var dmg = GetComboDamage(target) + MyHero.GetAutoAttackDamage(target) * 6;
 
-            if (dmg > SelectedTarget.Health)
+			if(dmg > target.Health)
                 R.Cast();
         }
 

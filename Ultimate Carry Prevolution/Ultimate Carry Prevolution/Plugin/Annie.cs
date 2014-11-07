@@ -45,7 +45,6 @@ namespace Ultimate_Carry_Prevolution.Plugin
 				{
 					AddSpelltoMenu(harassMenu, "Q", true);
 					AddSpelltoMenu(harassMenu, "W", true);
-					AddSpelltoMenu(harassMenu, "E", true);
 					harassMenu.AddItem(new MenuItem("Q_Lasthit_Harass", "Use Q LastHit").SetValue(true));
 					harassMenu.AddItem(new MenuItem("Q_Lasthit_Harass_stun", "Use Q on minion if stun up").SetValue(false));
 					AddManaManagertoMenu(harassMenu, 30);
@@ -55,15 +54,15 @@ namespace Ultimate_Carry_Prevolution.Plugin
 				{
 					AddSpelltoMenu(laneClearMenu, "Q", true);
 					AddSpelltoMenu(laneClearMenu, "W", true);
-					AddSpelltoMenu(laneClearMenu, "E", true);
 					AddManaManagertoMenu(laneClearMenu, 20);
 					champMenu.AddSubMenu(laneClearMenu);
 				}
 
 				var lasthitmenu = new Menu("Lasthit", "Lasthit");
 				{
-					harassMenu.AddItem(new MenuItem("Q_Lasthit_Lasthit", "Use Q LastHit").SetValue(true));
-					harassMenu.AddItem(new MenuItem("Q_Lasthit_Lasthit_stun", "Use Q on minion if stun up").SetValue(true));
+					lasthitmenu.AddItem(new MenuItem("Q_Lasthit_Lasthit", "Use Q LastHit").SetValue(true));
+					lasthitmenu.AddItem(new MenuItem("Q_Lasthit_Lasthit_stun", "Use Q on minion if stun up").SetValue(true));
+					champMenu.AddSubMenu(lasthitmenu);
 				}
 
 				var miscMenu = new Menu("Misc", "Misc");
@@ -122,7 +121,9 @@ namespace Ultimate_Carry_Prevolution.Plugin
 
 		public override void OnAttack(Obj_AI_Base unit, Obj_AI_Base target)
 		{
-			if (unit.IsEnemy && !unit.IsMinion && target.IsMe && Menu.Item("E_AgainAA").GetValue<bool>() && E.IsReady())
+			if(unit.IsEnemy && !unit.IsMinion && target.IsMe && Menu.Item("E_AgainAA").GetValue<bool>() && E.IsReady())
+				E.Cast();
+			if(xSLxOrbwalker.CurrentMode == xSLxOrbwalker.Mode.LaneClear && unit.IsEnemy && target.IsMe && Menu.Item("E_AgainAA").GetValue<bool>() && E.IsReady())
 				E.Cast();
 		}
 
@@ -249,6 +250,14 @@ namespace Ultimate_Carry_Prevolution.Plugin
 			}
 		}
 
+		public override void OnPassive()
+		{
+			if(!Menu.Item("E_InBase").GetValue<bool>() || !E.IsReady())
+				return;
+			if(Utility.InShopRange() && GetPassiveStacks() <= 3)
+				E.Cast();
+		}
+
 		public override void OnCombo()
 		{
 			if (IsSpellActive("R"))
@@ -261,15 +270,27 @@ namespace Ultimate_Carry_Prevolution.Plugin
 				Cast_W();
 		}
 
+
+		public override void OnLaneClear()
+		{
+			if(IsSpellActive("Q"))
+				Cast_Q();
+			if(IsSpellActive("W") && ManaManagerAllowCast())
+				Cast_W();
+		}
+
 		public override void OnHarass()
 		{
 			if (IsSpellActive("Q"))
 				Cast_Q();
-			if (IsSpellActive("E") && ManaManagerAllowCast() )
-				Cast_E();
 			if (IsSpellActive("W") && ManaManagerAllowCast() )
 				Cast_W();
 
+		}
+
+		public override void OnLasthit()
+		{
+			Cast_Q();
 		}
 
 		private void Cast_Q()
@@ -278,7 +299,7 @@ namespace Ultimate_Carry_Prevolution.Plugin
 				return;
 			if (xSLxOrbwalker.CurrentMode == xSLxOrbwalker.Mode.Combo || xSLxOrbwalker.CurrentMode == xSLxOrbwalker.Mode.Harass)
 			{
-				if (!Q.IsReady() || !ManaManagerAllowCast())
+				if (!Q.IsReady() || (!ManaManagerAllowCast() &&xSLxOrbwalker.CurrentMode == xSLxOrbwalker.Mode.Combo) )
 					return;
 				var target = SimpleTs.GetTarget(Q.Range, SimpleTs.DamageType.Magical);
 				if (target != null)
@@ -296,7 +317,7 @@ namespace Ultimate_Carry_Prevolution.Plugin
 				var minionLastHit =
 					allMinions.Where(
 						x =>
-							HealthPrediction.LaneClearHealthPrediction(x, (int) Q.Delay*1000) < MyHero.GetSpellDamage(x, SpellSlot.Q)*0.95)
+							HealthPrediction.LaneClearHealthPrediction(x, (int) Q.Delay*1000) < MyHero.GetSpellDamage(x, SpellSlot.Q)*0.8)
 						.OrderBy(x => x.Health);
 
 				if (!minionLastHit.Any())
@@ -311,28 +332,23 @@ namespace Ultimate_Carry_Prevolution.Plugin
 					return;
 				var allMinions =
 					MinionManager.GetMinions(MyHero.ServerPosition, Q.Range, MinionTypes.All, MinionTeam.NotAlly).ToList();
-				var minionLastHit =
-					allMinions.Where(
-						x =>
-							HealthPrediction.LaneClearHealthPrediction(x, (int) Q.Delay*1000) < MyHero.GetSpellDamage(x, SpellSlot.Q)*0.95)
-						.OrderBy(x => x.Health);
+				var minionLastHit = allMinions.Where(x => HealthPrediction.LaneClearHealthPrediction(x, (int)Q.Delay * 1000) < MyHero.GetSpellDamage(x, SpellSlot.Q) * 0.8).OrderBy(x => x.Health);
 
-				if (!minionLastHit.Any())
+
+				if(!minionLastHit.Any())
 					return;
 				var unit = minionLastHit.First();
+				Game.PrintChat(GetPassiveStacks().ToString());
 				Q.CastOnUnit(unit, UsePackets());
 			}
 
-			if(xSLxOrbwalker.CurrentMode == xSLxOrbwalker.Mode.Lasthit && Menu.Item("Q_Lasthit_Lasthit").GetValue<bool>())
+			if(xSLxOrbwalker.CurrentMode == xSLxOrbwalker.Mode.LaneClear )
 			{
-				if(GetPassiveStacks() == 4 && !Menu.Item("Q_Lasthit_Lasthit_stun").GetValue<bool>())
-					return;
-				var allMinions =
-					MinionManager.GetMinions(MyHero.ServerPosition, Q.Range, MinionTypes.All, MinionTeam.NotAlly).ToList();
+				var allMinions =MinionManager.GetMinions(MyHero.ServerPosition, Q.Range, MinionTypes.All, MinionTeam.NotAlly).ToList();
 				var minionLastHit =
 					allMinions.Where(
 						x =>
-							HealthPrediction.LaneClearHealthPrediction(x, (int)Q.Delay * 1000) < MyHero.GetSpellDamage(x, SpellSlot.Q) * 0.95)
+							HealthPrediction.LaneClearHealthPrediction(x, (int)Q.Delay * 1000) < MyHero.GetSpellDamage(x, SpellSlot.Q) * 0.8)
 						.OrderBy(x => x.Health);
 
 				if(!minionLastHit.Any())
@@ -353,6 +369,15 @@ namespace Ultimate_Carry_Prevolution.Plugin
 				if(target != null)
 					W.Cast(target, UsePackets());
 			}
+			else
+			{
+				var minions = MinionManager.GetMinions(MyHero.ServerPosition, W.Range, MinionTypes.All, MinionTeam.NotAlly).ToList();
+				if(minions.Count <= 0)
+					return;
+				var farm = W.GetLineFarmLocation(minions, W.Width );
+				if(farm.MinionsHit >= 3 || minions.Any(x => x.Team == GameObjectTeam.Neutral))
+					W.Cast(farm.Position, UsePackets());
+			}
 		}
 
 		private void Cast_E()
@@ -365,7 +390,7 @@ namespace Ultimate_Carry_Prevolution.Plugin
 		{
 			if(!R.IsReady())
 				return;
-			var killableEnemy = AllHerosEnemy.FirstOrDefault(enemy => enemy.IsValidTarget(R.Range) && MyHero.GetSpellDamage(enemy, SpellSlot.R) >= enemy.Health);
+			var killableEnemy = AllHerosEnemy.FirstOrDefault(enemy => enemy.IsValidTarget(R.Range) && MyHero.GetSpellDamage(enemy, SpellSlot.R) *0.9>= enemy.Health);
 			if(killableEnemy != null)
 				R.Cast(killableEnemy, UsePackets());
 			var target = SimpleTs.GetTarget(R.Range, SimpleTs.DamageType.Magical);

@@ -9,7 +9,7 @@ namespace Ultimate_Carry_Prevolution
 {
 	class Loader
 	{
-		public const double VersionNumber = 0.1;
+		public const double VersionNumber = 0.2;
 
 		public Loader()
 		{

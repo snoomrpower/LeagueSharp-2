@@ -133,7 +133,30 @@ namespace xSLx_Orbwalker
 			Game.OnGameUpdate += OnUpdate;
 			Obj_AI_Base.OnProcessSpellCast += OnProcessSpell;
 			GameObject.OnCreate += Obj_SpellMissile_OnCreate;
+			Game.OnGameProcessPacket += OnProcessPacket;
 			//Game.OnGameSendPacket += GameSendPacker_Supportmode;
+			Obj_AI_Base.OnPlayAnimation += OnAnimation;
+		}
+
+		private static void OnAnimation(GameObject sender, GameObjectPlayAnimationEventArgs args)
+		{
+			if (sender.IsMe && (args.Animation == "Run" || args.Animation == "Idle") && CanMove() == false)
+				ResetAutoAttackTimer();
+		}
+
+		private static void OnProcessPacket(GamePacketEventArgs args)
+		{
+			if (args.PacketData[0] != 0x34)
+				return;
+
+			if (Game.Version.Contains("4.19") && (args.PacketData[5] != 0x11 && args.PacketData[5] != 0x91))
+				return;
+
+			if (Game.Version.Contains("4.18") && (args.PacketData[9] != 17))
+				return;
+
+			if (new GamePacket(args.PacketData).ReadInteger(1) == ObjectManager.Player.NetworkId)
+				ResetAutoAttackTimer();
 		}
 
 		private static void GameSendPacker_Supportmode(GamePacketEventArgs args)
@@ -629,7 +652,7 @@ namespace xSLx_Orbwalker
 					continue;
 				hitsToKill = killHits;
 			}
-			return hitsToKill <= 4 ? killableEnemy : SimpleTs.GetTarget(GetAutoAttackRange() + 100, SimpleTs.DamageType.Physical);
+			return hitsToKill <= 3 ? killableEnemy : SimpleTs.GetTarget(GetAutoAttackRange() + 100, SimpleTs.DamageType.Physical);
 		}
 
 		public static double CountKillhits(Obj_AI_Base enemy)
