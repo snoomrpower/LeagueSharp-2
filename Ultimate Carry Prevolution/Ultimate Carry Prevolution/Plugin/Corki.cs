@@ -61,6 +61,12 @@ namespace Ultimate_Carry_Prevolution.Plugin
                     champMenu.AddSubMenu(laneClearMenu);
                 }
 
+                var miscMenu = new Menu("Misc", "Misc");
+                {
+                    miscMenu.AddItem(new MenuItem("Misc_W_To_Mouse", "W To Mouse")).SetValue(new KeyBind("W".ToCharArray()[0], KeyBindType.Press));
+                    champMenu.AddSubMenu(miscMenu);
+                }
+
                 var drawMenu = new Menu("Drawing", "Drawing");
                 {
                     drawMenu.AddItem(new MenuItem("Draw_Disabled", "Disable All").SetValue(false));
@@ -130,6 +136,12 @@ namespace Ultimate_Carry_Prevolution.Plugin
             if (Menu.Item("Draw_R").GetValue<bool>())
                 if (R.Level > 0)
                     Utility.DrawCircle(MyHero.Position, R.Range, R.IsReady() ? Color.Green : Color.Red);
+        }
+
+        public override void OnPassive()
+        {
+            if (Menu.Item("Misc_W_To_Mouse").GetValue<KeyBind>().Active)
+                W.Cast(Game.CursorPos);
         }
 
         public override void OnCombo()
