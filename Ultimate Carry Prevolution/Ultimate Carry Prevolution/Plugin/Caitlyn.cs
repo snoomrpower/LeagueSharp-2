@@ -146,7 +146,7 @@ namespace Ultimate_Carry_Prevolution.Plugin
                 if (R.Level > 0)
                     Utility.DrawCircle(MyHero.Position, R.Range, R.IsReady() ? Color.Green : Color.Red);
 
-            if (Menu.Item("Draw_R_Killable").GetValue<bool>())
+            if (Menu.Item("Draw_R_Killable").GetValue<bool>() && R.IsReady())
             {
                 foreach (var unit in ObjectManager.Get<Obj_AI_Hero>().Where(x => x.IsValidTarget(R.Range) && !x.IsDead && x.IsEnemy).OrderBy(x => x.Health))
                 {
