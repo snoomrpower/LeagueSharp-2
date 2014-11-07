@@ -138,26 +138,6 @@ namespace xSLx_Orbwalker
 
 		private static void GameSendPacker_Supportmode(GamePacketEventArgs args)
 		{
-            if (args.PacketData[0] != 0x34)
-            {
-                return;
-            }
-
-            if (Game.Version.Contains("4.19") && (args.PacketData[5] != 0x11 && args.PacketData[5] != 0x91))
-            {
-                return;
-            }
-
-            if (Game.Version.Contains("4.18") && (args.PacketData[9] != 17))
-            {
-                return;
-            }
-
-            if (new GamePacket(args.PacketData).ReadInteger(1) == ObjectManager.Player.NetworkId)
-            {
-                ResetAutoAttackTimer();
-            }
-
             /*
 			if(args.PacketData[0] != Packet.C2S.Move.Header)
 				return;
