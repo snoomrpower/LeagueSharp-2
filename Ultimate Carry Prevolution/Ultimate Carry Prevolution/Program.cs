@@ -1,4 +1,5 @@
 ﻿using System;
+using LeagueSharp;
 
 namespace Ultimate_Carry_Prevolution
 {
@@ -12,7 +13,8 @@ namespace Ultimate_Carry_Prevolution
 
 		private static void OnGameStart(EventArgs args)
 		{
-			LoadUC();
+			Game.PrintChat("Its Released when its Released, not when you find our repo.");
+			//LoadUC();
 		}
 
 		private static void LoadUC()
