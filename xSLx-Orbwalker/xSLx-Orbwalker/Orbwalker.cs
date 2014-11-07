@@ -138,7 +138,6 @@ namespace xSLx_Orbwalker
 
 		private static void GameSendPacker_Supportmode(GamePacketEventArgs args)
 		{
-            /*
 			if(args.PacketData[0] != Packet.C2S.Move.Header)
 				return;
 			var decodedPacket = Packet.C2S.Move.Decoded(args.PacketData);
@@ -148,7 +147,7 @@ namespace xSLx_Orbwalker
 			if(AllAllys.Any(
 					hero => !hero.IsMe && !hero.IsDead && hero.Distance(GetPossibleTarget()) <= hero.AttackRange + 200))
 				args.Process = false;
-             */
+             
 		}
 
 		private static void Obj_SpellMissile_OnCreate(GameObject sender, EventArgs args)
