@@ -162,6 +162,10 @@ namespace Ultimate_Carry_Prevolution.Plugin
 
         public override void OnPassive()
         {
+            //dynamic r range
+            if(R.IsReady())
+                R.Range = 500 * R.Level + 1500;
+
             if (Menu.Item("R_Nearest_Killable").GetValue<KeyBind>().Active)
                 Cast_R();
 
