@@ -602,7 +602,7 @@ namespace xSLx_Orbwalker
 			var hitsToKill = double.MaxValue;
 			if(MyHero.ChampionName == "Azir")
 			{
-				foreach(var enemy in AllEnemys.Where(hero => hero.IsValidTarget() && InSoldierAttackRange(hero)))
+				foreach(var enemy in AllEnemys.Where(hero => hero.IsValidTarget() && InSoldierAttackRange(hero) && hero.IsEnemy))
 				{
 					var killHits = CountKillhitsAzirSoldier(enemy);
 					if(killableEnemy != null && (!(killHits < hitsToKill) || enemy.HasBuffOfType(BuffType.Invulnerability)))
@@ -613,14 +613,14 @@ namespace xSLx_Orbwalker
 				if(hitsToKill <= 4)
 					return killableEnemy;
 				Obj_AI_Hero[] mostdmgenemy = { null };
-				foreach(var enemy in AllEnemys.Where(hero => hero.IsValidTarget() && InSoldierAttackRange(hero)).Where(enemy => mostdmgenemy[0] == null || GetAzirAASandwarriorDamage(enemy) > GetAzirAASandwarriorDamage(mostdmgenemy[0])))
+				foreach(var enemy in AllEnemys.Where(hero => hero.IsValidTarget() && hero.IsEnemy && InSoldierAttackRange(hero)).Where(enemy => mostdmgenemy[0] == null || GetAzirAASandwarriorDamage(enemy) > GetAzirAASandwarriorDamage(mostdmgenemy[0])))
 				{
 					mostdmgenemy[0] = enemy;
 				}
 				if(mostdmgenemy[0] != null)
 					return mostdmgenemy[0];
 			}
-			foreach(var enemy in AllEnemys.Where(hero => hero.IsValidTarget() && InAutoAttackRange(hero)))
+			foreach(var enemy in AllEnemys.Where(hero => hero.IsValidTarget() && InAutoAttackRange(hero) && hero.IsEnemy))
 			{
 				var killHits = CountKillhits(enemy);
 				if(killableEnemy != null && (!(killHits < hitsToKill) || enemy.HasBuffOfType(BuffType.Invulnerability)))
