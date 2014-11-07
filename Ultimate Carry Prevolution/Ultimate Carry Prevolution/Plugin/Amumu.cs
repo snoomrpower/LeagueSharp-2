@@ -201,7 +201,7 @@ namespace Ultimate_Carry_Prevolution.Plugin
 					Obj_AI_Base bestTarget = null;
 					foreach(var unit in ObjectManager.Get<Obj_AI_Base>().Where(x => x.IsValidTarget(Q.Range) && Q.GetPrediction(x).Hitchance >= HitChance.High))
 					{
-						var targetsHit = Utility.CountEnemysInRange((int)R.Range, unit);
+						var targetsHit = unit.CountEnemysInRange((int)R.Range);
 
 						if(targetsHit <= couldHitTargets &&
 							(bestTarget == null || targetsHit < couldHitTargets || unit.Type != GameObjectType.obj_AI_Hero))

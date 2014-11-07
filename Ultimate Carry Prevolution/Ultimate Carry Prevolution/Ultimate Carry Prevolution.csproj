@@ -82,7 +82,6 @@
     <Compile Include="Plugin\Akali.cs" />
     <Compile Include="Plugin\Alistar.cs" />
     <Compile Include="Plugin\Amumu.cs" />
-    <Compile Include="Plugin\Anivia.cs" />
     <Compile Include="Plugin\Caitlyn.cs" />
     <Compile Include="Plugin\Corki.cs" />
     <Compile Include="Plugin\Vayne.cs" />
