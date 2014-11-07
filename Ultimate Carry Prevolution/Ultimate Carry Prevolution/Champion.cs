@@ -37,6 +37,7 @@ namespace Ultimate_Carry_Prevolution
 			GameObject.OnDelete += ObjSpellMissileOnOnDelete;
 			GameObject.OnCreate += ObjSpellMissileOnOnCreate;
 		    xSLxOrbwalker.AfterAttack += OnAfterAttack;
+			xSLxOrbwalker.OnAttack += OnAttack;
 		}
 
 		private void OnGameUpdateModes(EventArgs args)
@@ -231,6 +232,7 @@ namespace Ultimate_Carry_Prevolution
 			}
 			return false;
 		}
+
 		public virtual void OnDraw(EventArgs args)
 		{
 			OnDraw();
@@ -238,6 +240,10 @@ namespace Ultimate_Carry_Prevolution
 		public virtual void OnDraw()
 		{
 			// Virtual OnDraw
+		}
+		public virtual void OnAttack(Obj_AI_Base unit, Obj_AI_Base target)
+		{
+			throw new NotImplementedException();
 		}
         public virtual void OnAfterAttack(Obj_AI_Base unit, Obj_AI_Base target)
 	    {
