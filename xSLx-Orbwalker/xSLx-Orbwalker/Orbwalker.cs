@@ -134,7 +134,7 @@ namespace xSLx_Orbwalker
 			Obj_AI_Base.OnProcessSpellCast += OnProcessSpell;
 			GameObject.OnCreate += Obj_SpellMissile_OnCreate;
 			Game.OnGameProcessPacket += OnProcessPacket;
-			Obj_AI_Base.OnPlayAnimation += OnAnimation;
+			//Obj_AI_Base.OnPlayAnimation += OnAnimation;
 		}
 
 		private static void OnAnimation(GameObject sender, GameObjectPlayAnimationEventArgs args)
@@ -154,7 +154,7 @@ namespace xSLx_Orbwalker
 			if (Game.Version.Contains("4.18") && (args.PacketData[9] != 17))
 				return;
 
-			if (new GamePacket(args.PacketData).ReadInteger(1) == ObjectManager.Player.NetworkId)
+			if (new GamePacket(args.PacketData).ReadInteger(1) == MyHero.NetworkId)
 				ResetAutoAttackTimer();
 		}
 
